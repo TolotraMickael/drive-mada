@@ -104,7 +104,7 @@ export default function DetailsItineraire() {
         contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-col w-full gap-8 p-6 bg-white rounded-2xl">
+        <View className="flex-col w-full gap-8 p-6 bg-white rounded-lg">
           <View className="flex-row justify-between overflow-hidden">
             <Text className="text-3xl font-heading">Trajet</Text>
             <TouchableOpacity>
@@ -166,10 +166,10 @@ export default function DetailsItineraire() {
             <View className="flex-row">
               <Armchair color={Colors.icon} size={24} />
               <Text className="ml-2 font-regular">
-                Total: {data.nombre_place}
+                Total : {data.nombre_place}
               </Text>
             </View>
-            <View className="h-5 my-2 ml-3 border-l border-muted-foreground" />
+            <View className="h-5 my-2 ml-3 border-l border-neutral-200" />
             {data.place_disponible === 0 ? (
               <Text className="text-sm text-red-700 font-regular">
                 Aucune place disponible
@@ -183,7 +183,7 @@ export default function DetailsItineraire() {
         </View>
 
         {(data.reservations?.length || 0) > 0 && (
-          <View className="p-6 mt-6 bg-white rounded-2xl">
+          <View className="p-6 mt-6 bg-white rounded-lg">
             <View className="flex-row items-center justify-between">
               <Text className="text-lg font-medium">
                 Réservations ({data.nombre_place - (data.place_disponible || 0)}

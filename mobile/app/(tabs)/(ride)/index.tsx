@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { useCallback, useState, useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 
 import { Button } from "@/components/button";
@@ -11,10 +11,12 @@ import { CardItinerary } from "@/components/card-itinerary";
 import { useAuthStore } from "@/store/auth-store";
 import { TItineraire } from "@/types/itineraire";
 import { Envs } from "@/lib/config";
+import { Colors } from "@/lib/colors";
 
 export default function RideScreen() {
   const { token } = useAuthStore();
   const [data, setData] = useState<TItineraire[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // useFocusEffect(() => {
   //   useCallback(() => {
@@ -27,6 +29,8 @@ export default function RideScreen() {
   }, []);
 
   const getUserItineraires = async () => {
+    setLoading(true);
+
     try {
       const response = await fetch(`${Envs.apiUrl}/itineraires/me`, {
         method: "GET",
@@ -43,13 +47,19 @@ export default function RideScreen() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View className="flex-1 bg-background">
       <AppHeader title="Mes trajets" />
-      {data.length !== 0 ? (
+      {loading ? (
+        <View className="flex items-center justify-center w-full h-32">
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      ) : data.length !== 0 ? (
         <ScrollView
           className="flex-1 p-6 pt-1"
           contentContainerStyle={{ paddingBottom: 116 }}

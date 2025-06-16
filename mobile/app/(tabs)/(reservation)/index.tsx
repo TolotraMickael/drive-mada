@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { Envs } from "@/lib/config";
 import { Button } from "@/components/button";
@@ -9,16 +9,20 @@ import { AppHeader } from "@/components/app-header";
 import { useAuthStore } from "@/store/auth-store";
 import { TReservation } from "@/types/reservation";
 import { CardReservation } from "@/components/card-reservation";
+import { Colors } from "@/lib/colors";
 
 export default function ReservationScreen() {
   const { token } = useAuthStore();
   const [data, setData] = useState<TReservation[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getUserReservations();
   }, []);
 
   const getUserReservations = async () => {
+    setLoading(true);
+
     try {
       const response = await fetch(`${Envs.apiUrl}/reservations/me`, {
         method: "GET",
@@ -35,6 +39,8 @@ export default function ReservationScreen() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,7 +48,11 @@ export default function ReservationScreen() {
     <View className="flex-1 bg-background">
       <AppHeader title="Mes réservations" />
 
-      {data.length !== 0 ? (
+      {loading ? (
+        <View className="flex items-center justify-center w-full h-32">
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      ) : data.length !== 0 ? (
         <ScrollView
           className="flex-1 p-6 pt-1"
           contentContainerStyle={{ paddingBottom: 116 }}

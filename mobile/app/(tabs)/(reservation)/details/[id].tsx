@@ -10,36 +10,15 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import {
-  CameraType,
-  useCameraPermissions,
-  BarcodeScanningResult,
-} from "expo-camera";
 
+import { Envs } from "@/lib/config";
 import { Colors } from "@/lib/colors";
 import { Avatars } from "@/lib/avatars";
-import { AppHeader } from "@/components/app-header";
+import { Item } from "@/components/item";
+import { formatDateTime } from "@/lib/date";
 import { useAuthStore } from "@/store/auth-store";
 import { TReservation } from "@/types/reservation";
-import { formatDateTime } from "@/lib/date";
-import { Envs } from "@/lib/config";
-
-function Item({
-  label,
-  value,
-  className,
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) {
-  return (
-    <View className={`flex flex-col gap-1 ${className}}`}>
-      <Text className="text-sm text-neutral-400">{label}</Text>
-      <Text className="text-lg font-semibold">{value}</Text>
-    </View>
-  );
-}
+import { AppHeader } from "@/components/app-header";
 
 function PaymentInfo({ status }: { status: string }) {
   const Status = {
@@ -62,11 +41,7 @@ export default function ReservationDetails() {
   const router = useRouter();
   const { token } = useAuthStore();
   const { id } = useLocalSearchParams();
-  const [open, setOpen] = useState(false);
   const [data, setData] = useState<TReservation | null>(null);
-
-  const [facing, setFacing] = useState<CameraType>("back");
-  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
     getReservationById();
@@ -93,26 +68,6 @@ export default function ReservationDetails() {
       console.log(err);
     }
   }, [id]);
-
-  const handleOpenScan = useCallback(async () => {
-    if (!permission?.granted) {
-      await requestPermission();
-    } else {
-      setOpen(true);
-    }
-  }, [permission]);
-
-  const handleCloseScan = () => {
-    setOpen(false);
-  };
-
-  const onBarcodeScanned = useCallback(
-    (scanningResult: BarcodeScanningResult) => {
-      console.log({ scanningResult });
-      return;
-    },
-    []
-  );
 
   return (
     <View className="flex-1 bg-background">
@@ -164,7 +119,7 @@ export default function ReservationDetails() {
             <View className="flex items-center justify-center flex-1 mt-6">
               <View className="rounded-lg w-[140px] h-[140px] bg-slate-100">
                 <QRCode
-                  value={JSON.stringify({ id: data.id_reservation, token })}
+                  value={JSON.stringify({ id: data.id_reservation })}
                   size={140}
                 />
               </View>

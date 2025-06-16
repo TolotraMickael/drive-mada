@@ -9,6 +9,7 @@ import {
   ScrollView,
   TouchableOpacity,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 
 import { Envs } from "@/lib/config";
@@ -27,6 +28,8 @@ export default function HomeScreen() {
   const { token, user } = useAuthStore();
   const [data, setData] = useState<TItineraire[]>([]);
   const { vehicules } = useVehiculeStore();
+  const [loading, setLoading] = useState(false);
+
   const [filters, setFilters] = useState({
     depart: "",
     destination: "",
@@ -38,6 +41,8 @@ export default function HomeScreen() {
   }, []);
 
   const getListItineraires = useCallback(async (params?: string) => {
+    setLoading(true);
+
     try {
       let url = `${Envs.apiUrl}/itineraires`;
       if (params) url += `?${params}`;
@@ -55,6 +60,8 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -164,21 +171,27 @@ export default function HomeScreen() {
             <Text className="text-2xl font-heading">
               Découvrez les plus récents
             </Text>
-            <View className="flex flex-col gap-6">
-              {data.map((itineraire) => (
-                <Card
-                  key={itineraire.id_itineraire}
-                  href={{
-                    pathname: "/(tabs)/(home)/details/[id]",
-                    params: { id: itineraire.id_itineraire },
-                  }}
-                  depart={itineraire.depart}
-                  destination={itineraire.destination}
-                  dateDepart={itineraire.date_depart}
-                  frais={itineraire.prix}
-                />
-              ))}
-            </View>
+            {loading ? (
+              <View className="flex items-center justify-center w-full h-32">
+                <ActivityIndicator size="large" color={Colors.primary} />
+              </View>
+            ) : (
+              <View className="flex flex-col gap-6">
+                {data.map((itineraire) => (
+                  <Card
+                    key={itineraire.id_itineraire}
+                    href={{
+                      pathname: "/(tabs)/(home)/details/[id]",
+                      params: { id: itineraire.id_itineraire },
+                    }}
+                    depart={itineraire.depart}
+                    destination={itineraire.destination}
+                    dateDepart={itineraire.date_depart}
+                    frais={itineraire.prix}
+                  />
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
