@@ -27,8 +27,6 @@ export default function AccountScreen() {
     email: user?.email || "",
   });
 
-  console.log(userData);
-
   const handleNext = () => {
     setUserData((state) => {
       if (state.id_avatar < Avatars.length - 1) {

@@ -16,7 +16,7 @@ export default function ReservationScreen() {
 
   useEffect(() => {
     getUserReservations();
-  });
+  }, []);
 
   const getUserReservations = async () => {
     try {

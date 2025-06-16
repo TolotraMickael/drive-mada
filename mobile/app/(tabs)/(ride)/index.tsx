@@ -24,7 +24,7 @@ export default function RideScreen() {
 
   useEffect(() => {
     getUserItineraires();
-  });
+  }, []);
 
   const getUserItineraires = async () => {
     try {
@@ -39,7 +39,7 @@ export default function RideScreen() {
       if (!response.ok) {
         console.log("Error", result.message);
       } else {
-        setData(result);
+        setData(result.data);
       }
     } catch (error) {
       console.log(error);

@@ -1,7 +1,7 @@
 import QRCode from "react-native-qrcode-svg";
 import { useCallback, useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { PhoneIcon, QrCode, SwitchCamera } from "lucide-react-native";
+import { PhoneIcon } from "lucide-react-native";
 import {
   Text,
   View,
@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import {
-  CameraView,
   CameraType,
   useCameraPermissions,
   BarcodeScanningResult,
@@ -19,13 +18,11 @@ import {
 
 import { Colors } from "@/lib/colors";
 import { Avatars } from "@/lib/avatars";
-import { Button } from "@/components/button";
 import { AppHeader } from "@/components/app-header";
 import { useAuthStore } from "@/store/auth-store";
 import { TReservation } from "@/types/reservation";
-import { Envs } from "@/lib/config";
 import { formatDateTime } from "@/lib/date";
-import { TPaymentStatus } from "@/types/paiement";
+import { Envs } from "@/lib/config";
 
 function Item({
   label,
@@ -194,56 +191,6 @@ export default function ReservationDetails() {
               <PhoneIcon color={Colors.icon} size={18} />
             </TouchableOpacity>
           </View>
-
-          {/* <View className="flex items-center justify-center p-6 mt-6 bg-white rounded-lg">
-            <View className="mb-6">
-              <Text className="text-2xl text-center font-heading">
-                Vérification
-              </Text>
-              <Text className="text-sm text-center font-regular text-muted-foreground">
-                Scanner le QR Code pour vérifier la validité de la réservation.
-              </Text>
-            </View>
-            <View className="mb-6">
-              <QrCode size={110} strokeWidth={1} />
-            </View>
-            <View className="flex flex-row gap-4">
-              <Button disabled={!permission || open} onPress={handleOpenScan}>
-                Scanner
-              </Button>
-              {open && (
-                <Button variant="secondary" onPress={handleCloseScan}>
-                  Annuler
-                </Button>
-              )}
-            </View>
-
-            {open && (
-              <View className="relative justify-center flex-1 w-full mt-8 overflow-hidden rounded-lg max-w-80 h-80 bg-slate-200">
-                <CameraView
-                  facing={facing}
-                  className="rounded-lg"
-                  style={{ flex: 1, width: "100%", height: "100%" }}
-                  barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-                  onBarcodeScanned={onBarcodeScanned}
-                />
-                <View className="absolute flex-1 w-full h-full bg-transparent">
-                  <View className="p-3 mt-auto bg-neutral-900/30">
-                    <TouchableOpacity
-                      className="self-start p-2 border-[1.5px] rounded-full border-neutral-50"
-                      onPress={() =>
-                        setFacing((prev) =>
-                          prev === "front" ? "back" : "front"
-                        )
-                      }
-                    >
-                      <SwitchCamera size={20} color={Colors.white} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            )}
-          </View> */}
         </ScrollView>
       ) : (
         <View className="p-6">

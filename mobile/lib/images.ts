@@ -1,4 +1,4 @@
-// import Car from "../assets/images/car.png";
+import QrCode from "../assets/images/qrcode.png";
 import AllCar from "@/assets/images/all-car.png";
 import Car from "@/assets/images/car.png";
 import Car2 from "@/assets/images/car-2.png";
@@ -21,4 +21,5 @@ export const Images = {
   Carpool,
   Register,
   GpsNavigator,
+  QrCode,
 };

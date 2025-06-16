@@ -2,13 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View, Text, Image, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
+  BarcodeScanningResult,
+  CameraType,
+  CameraView,
+  useCameraPermissions,
+} from "expo-camera";
+import {
   Pencil,
   Map,
   MapPin,
   Armchair,
   ChevronDown,
   ChevronUp,
-  ScanLine,
+  SwitchCamera,
+  QrCode,
 } from "lucide-react-native";
 
 import { Envs } from "@/lib/config";
@@ -27,6 +34,10 @@ export default function DetailsItineraire() {
   const { id } = useLocalSearchParams();
   const [showReservations, setShowReservations] = useState(false);
   const [data, setData] = useState<TItineraire | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const [facing, setFacing] = useState<CameraType>("back");
+  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
     getDetailItineraireById();
@@ -50,16 +61,35 @@ export default function DetailsItineraire() {
       if (!response.ok) {
         console.log("Error", result.message);
       } else {
-        setData(result);
+        setData(result.data);
       }
     } catch (error) {
       console.log(error);
     }
   }, [id]);
 
+  const handleOpenScan = useCallback(async () => {
+    if (!permission?.granted) {
+      await requestPermission();
+    } else {
+      setOpen(true);
+    }
+  }, [permission]);
+
+  const handleCloseScan = () => {
+    setOpen(false);
+  };
+
+  const onBarcodeScanned = useCallback(
+    (scanningResult: BarcodeScanningResult) => {
+      console.log({ scanningResult });
+    },
+    []
+  );
+
   if (!data) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="items-center justify-center flex-1">
         <Text>Aucune donnée disponible</Text>
       </View>
     );
@@ -74,9 +104,9 @@ export default function DetailsItineraire() {
         contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="w-full bg-white p-6 gap-8 flex-col rounded-2xl">
+        <View className="flex-col w-full gap-8 p-6 bg-white rounded-2xl">
           <View className="flex-row justify-between overflow-hidden">
-            <Text className="font-heading text-3xl">Trajet</Text>
+            <Text className="text-3xl font-heading">Trajet</Text>
             <TouchableOpacity>
               <Pencil color={Colors.icon} size={24} />
             </TouchableOpacity>
@@ -141,7 +171,9 @@ export default function DetailsItineraire() {
             </View>
             <View className="h-5 my-2 ml-3 border-l border-muted-foreground" />
             {data.place_disponible === 0 ? (
-              <Text className="text-red-600">Aucune place disponible</Text>
+              <Text className="text-sm text-red-700 font-regular">
+                Aucune place disponible
+              </Text>
             ) : (
               <Text className="font-regular">
                 Disponible: {data.place_disponible}
@@ -151,9 +183,9 @@ export default function DetailsItineraire() {
         </View>
 
         {(data.reservations?.length || 0) > 0 && (
-          <View className="mt-6 bg-white p-6 rounded-2xl">
+          <View className="p-6 mt-6 bg-white rounded-2xl">
             <View className="flex-row items-center justify-between">
-              <Text className="font-medium text-lg">
+              <Text className="text-lg font-medium">
                 Réservations ({data.nombre_place - (data.place_disponible || 0)}
                 )
               </Text>
@@ -165,16 +197,17 @@ export default function DetailsItineraire() {
               </TouchableOpacity>
             </View>
             {showReservations && (
-              <View className="mt-4" key={data.utilisateur.id_utilisateur}>
+              <View className="mt-4">
                 {data.reservations?.map((per, index, array) => (
                   <View
-                    className={`flex flex-row items-center justify-between py-3  ${
+                    key={per.id_reservation}
+                    className={`flex flex-row items-center justify-between py-3 ${
                       index !== array.length - 1
                         ? "border-b-2 border-secondary"
                         : ""
                     } rounded-xl`}
                   >
-                    <View className="flex-row  gap-4">
+                    <View className="flex-row gap-4">
                       <Image
                         source={Avatars[per.utilisateur.id_avatar]}
                         resizeMode="contain"
@@ -187,7 +220,7 @@ export default function DetailsItineraire() {
                         </Text>
                       </View>
                     </View>
-                    <Text className="w-8 text-neutral-500 text-center font-regular text-m bg-white shadow-lg pt-1 rounded-full">
+                    <Text className="w-8 pt-1 text-center bg-white rounded-full shadow-lg text-neutral-500 font-regular text-m">
                       {per.nombre_place_reserve}
                     </Text>
                   </View>
@@ -196,11 +229,60 @@ export default function DetailsItineraire() {
             )}
           </View>
         )}
-        <View className="mt-6 bg-white p-6 flex-col align-center items-center justify-between gap-6 rounded-2xl">
-          <Text className="font-medium text-lg">Vérification</Text>
+
+        <View className="flex items-center justify-center p-6 mt-6 bg-white rounded-lg">
+          <View className="mb-6">
+            <Text className="text-2xl text-center font-heading">
+              Vérification
+            </Text>
+            <Text className="text-sm text-center font-regular text-muted-foreground">
+              Scanner le QR Code pour vérifier la validité de la réservation.
+            </Text>
+          </View>
+          <View className="mb-6">
+            <Image source={Images.QrCode} className="w-32 h-32" />
+          </View>
+          <View className="flex flex-row gap-4">
+            <Button disabled={!permission || open} onPress={handleOpenScan}>
+              Scanner
+            </Button>
+            {open && (
+              <Button variant="secondary" onPress={handleCloseScan}>
+                Annuler
+              </Button>
+            )}
+          </View>
+
+          {open && (
+            <View className="relative justify-center flex-1 w-full mt-8 overflow-hidden rounded-lg max-w-80 h-80 bg-slate-200">
+              <CameraView
+                facing={facing}
+                className="rounded-lg"
+                style={{ flex: 1, width: "100%", height: "100%" }}
+                barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+                onBarcodeScanned={onBarcodeScanned}
+              />
+              <View className="absolute flex-1 w-full h-full bg-transparent">
+                <View className="p-3 mt-auto bg-neutral-900/30">
+                  <TouchableOpacity
+                    className="self-start p-2 border-[1.5px] rounded-full border-neutral-50"
+                    onPress={() =>
+                      setFacing((prev) => (prev === "front" ? "back" : "front"))
+                    }
+                  >
+                    <SwitchCamera size={20} color={Colors.white} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* <View className="flex-col items-center justify-between gap-6 p-6 mt-6 bg-white align-center rounded-2xl">
+          <Text className="text-lg font-medium">Vérification</Text>
           <ScanLine size={100} strokeWidth={0.5} />
           <Button>Scanner</Button>
-        </View>
+        </View> */}
       </ScrollView>
     </View>
   );

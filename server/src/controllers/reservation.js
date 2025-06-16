@@ -1,62 +1,65 @@
 import { PaymentStatus, ReservationStatus } from "../lib/constant.js";
 import pool from "../lib/db.js";
+import vehicule from "./vehicule.js";
 
-function mapReservationObject(
-  rows,
-  placesDisponibles,
-  nombre_place_reserve,
-  options
-) {
-  const afficherPlaceDispo = !!options?.afficherPlaceDispo;
-  const afficherPlaceReserve = !!options?.afficherPlaceReserve;
+function mapReservations(rows) {
+  return rows.map((row) => mapReservationObject(row));
+}
 
-  return rows.map(
-    ({
+function mapReservationObject(row) {
+  const {
+    id_itineraire,
+    depart,
+    destination,
+    statut_itineraire,
+    nombre_place,
+    prix,
+    date_depart,
+    id_utilisateur,
+    nom,
+    prenom,
+    email,
+    telephone,
+    id_avatar,
+    id_paiement,
+    type,
+    nom_vehicule,
+    photo_vehicule,
+    id_vehicule,
+    statut_paiement,
+    ...reservation
+  } = row;
+
+  return {
+    ...reservation,
+    itineraire: {
       id_itineraire,
       depart,
       destination,
-      statut_itineraire,
+      statut: statut_itineraire,
       nombre_place,
-      prix,
+      prix: Number(prix),
       date_depart,
+    },
+    utilisateur: {
       id_utilisateur,
-      nom_utilisateur,
+      nom,
+      prenom,
       email,
       telephone,
       id_avatar,
+    },
+    vehicule: {
+      id_vehicule,
+      nom: nom_vehicule,
+      photo: photo_vehicule,
+    },
+    paiement: {
       id_paiement,
       type,
-      statut_paiement,
-      ...reservation
-    }) => ({
-      ...reservation,
-      itineraire: {
-        id_itineraire,
-        depart,
-        destination,
-        statut: statut_itineraire,
-        nombre_place,
-        prix,
-        date_depart,
-      },
-      utilisateur: {
-        id_utilisateur,
-        nom_utilisateur,
-        email,
-        telephone,
-        id_avatar,
-      },
-      paiement: {
-        id_paiement,
-        type,
-        statut: statut_paiement,
-      },
-      ...(afficherPlaceDispo && { place_disponible: placesDisponibles }),
-      ...(afficherPlaceReserve && {
-        nombre_place_reserve: nombre_place_reserve,
-      }),
-    })
-  );
+      statut: statut_paiement,
+    },
+  };
 }
 
 async function createReservation(req, res) {
@@ -134,28 +137,22 @@ async function createReservation(req, res) {
 async function getUserReservations(req, res) {
   const connection = await pool.getConnection();
   const userId = req.userId;
-  const idItineraire = parseInt(req.params["id"], 10);
 
   try {
     const [rows] = await connection.execute(
       `SELECT r.*,
-      i.id_itineraire, i.depart, i.destination, i.date_depart , i.statut AS statut_itineraire, i.nombre_place,
-      p.id_paiement, p.type , p.statut AS statut_paiement
+      i.id_itineraire, i.depart, i.destination, i.date_depart, i.prix, i.statut AS statut_itineraire, i.nombre_place,
+      p.id_paiement, p.type, p.statut AS statut_paiement
       FROM reservations r
       JOIN itineraires i ON r.id_itineraire = i.id_itineraire
       JOIN paiements p On r.id_paiement = p.id_paiement
       WHERE r.id_utilisateur = ?
-      ORDER BY date_creation DESC;`,
+      ORDER BY date_creation DESC`,
       [userId]
     );
 
-    const placesReserve = Number(rows.nombre_place_reserve);
-
-    const data = mapReservationObject(rows, placesReserve, {
-      afficherPlaceReserve: true,
-    });
-
-    return res.status(200).json(data);
+    const data = mapReservations(rows);
+    return res.status(200).json({ data });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Erreur interne du serveur." });
@@ -166,6 +163,7 @@ async function getUserReservations(req, res) {
 
 async function getReservationById(req, res) {
   const idReservation = parseInt(req.params["id"], 10);
+  const userId = req.userId;
 
   const connection = await pool.getConnection();
 
@@ -173,39 +171,24 @@ async function getReservationById(req, res) {
     const [rows] = await connection.execute(
       `SELECT r.*,
       i.id_itineraire, i.depart, i.destination, i.prix, i.date_depart , i.statut AS statut_itineraire, i.nombre_place,
-      u.id_utilisateur, u.nom as nom_utilisateur, u.email, u.telephone, u.id_avatar,
-      p.id_paiement, p.type , p.statut AS statut_paiement
+      u.id_utilisateur, u.nom as nom, u.prenom as prenom, u.email, u.telephone, u.id_avatar,
+      p.id_paiement, p.type , p.statut AS statut_paiement,
+      v.id_vehicule, v.nom AS nom_vehicule, v.photo AS photo_vehicule
       FROM reservations r 
       JOIN utilisateurs u ON r.id_utilisateur = u.id_utilisateur 
       JOIN itineraires i ON r.id_itineraire = i.id_itineraire
+      JOIN vehicules v ON v.id_vehicule = i.id_vehicule
       JOIN paiements p On r.id_paiement = p.id_paiement
-      WHERE r.id_reservation = ?;`,
-      [idReservation]
+      WHERE r.id_reservation = ? AND r.id_utilisateur = ?`,
+      [idReservation, userId]
     );
 
     if (rows.length === 0) {
       return res.statut(404).json({ message: "Reservation non trouvé." });
     }
 
-    const idItineraire = rows[0].id_itineraire;
-
-    const [reservations] = await connection.execute(
-      `
-        SELECT COALESCE(SUM(nombre_place_reserve),0) AS place_reserve 
-        FROM reservations
-        WHERE id_itineraire = ?
-      `,
-      [idItineraire]
-    );
-
-    const placeDisponible =
-      Number(rows[0].nombre_place) - Number(reservations[0].place_reserve);
-
-    const data = mapReservationObject(rows[0], placeDisponible, {
-      afficherPlaceDispo: true,
-    });
-
-    return res.status(200).json(data);
+    const data = mapReservationObject(rows[0]);
+    return res.status(200).json({ data });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ message: "Erreur interne du serveur." });
@@ -214,75 +197,8 @@ async function getReservationById(req, res) {
   }
 }
 
-// async function updateReservation(req, res) {
-//   const conn = await getConnection();
-//   try {
-//     const { id } = req.params;
-
-//     const valeurs = req.body || {};
-
-//     if (Object.keys(valeurs).length === 0) {
-//       return res.status(400).json({ message : "Aucune valeur à mettre à jour." });
-//     }
-
-//     const rows = await conn.query(
-//       `SELECT * FROM reservations WHERE id_reservation = ?`,
-//       [id]
-//     );
-
-//     if (rows.length === 0) {
-//       return res.status(404).json({ message : "Reservation non trouvé." });
-//     }
-
-//     const entries = Object.entries(valeurs);
-//     const cles = entries.map(([key, value]) => `${key} = ?`);
-//     const valeur = entries.map(([key, value]) => value);
-
-//     valeur.push(id);
-
-//     const result = await conn.query(
-//       `UPDATE reservations SET ${cles.join(", ")} WHERE id_reservation = ?`,
-//       valeur
-//     );
-
-//     conn.close();
-
-//     if (result.affectedRows > 0) {
-//       return res.status(200).json({
-//         message: "Mise à jour réussie",
-//         affectedRows: result.affectedRows,
-//       });
-//     } else {
-//       return res
-//         .status(200)
-//         .json({ message: "Aucune modification effectuée." });
-//     }
-//   } catch (error) {
-//     conn.close();
-//     res.status(500).json({ err: "Erreur de la mise à jour." });
-//     console.log(error);
-//   }
-// }
-
-// async function deleteReservation(req, res) {
-//   const id = parseInt(req.params["id"]);
-//   try {
-//     const conn = await getConnection();
-//     await conn.conn.query("DELETE FROM reservations WHERE id_reservation = ?", [
-//       id,
-//     ]);
-
-//     conn.close();
-//     res.status(200).json({ message: "Suppression ok!" });
-//   } catch (err) {
-//     res.status(500).json({ message : "Erreur interne du serveur." });
-//   }
-// }
-
 export default {
   createReservation,
   getUserReservations,
   getReservationById,
-  // updateReservation,
-  // deleteReservation,
 };
