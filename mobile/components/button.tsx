@@ -34,7 +34,7 @@ export function Button({
   ...props
 }: Props) {
   return (
-    <View className="flex-row flex-1 h-12 max-h-12">
+    <View className="flex-row h-12 max-h-12">
       <TouchableOpacity
         onPress={onPress}
         disabled={disabled}

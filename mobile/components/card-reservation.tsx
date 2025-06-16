@@ -1,5 +1,6 @@
 import { Link, LinkProps } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { CarFrontIcon } from "lucide-react-native";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { Colors } from "@/lib/colors";
@@ -13,6 +14,7 @@ type Props = {
   destination: string;
   dateDepart: string;
   nbPlaceReserve: number;
+  montant: number;
 };
 
 export function CardReservation({
@@ -22,13 +24,14 @@ export function CardReservation({
   destination,
   dateDepart,
   nbPlaceReserve,
+  montant,
 }: Props) {
   return (
     <Link href={href} className={className} asChild>
       <TouchableOpacity>
-        <View className="flex p-6 flex-1 flex-row justify-between bg-white rounded-lg">
+        <View className="flex flex-row justify-between flex-1 p-6 bg-white rounded-lg">
           <View className="flex-row justify-between">
-            <View className="flex-row h-fit justify-between">
+            <View className="flex-row justify-between h-fit">
               <View className="flex flex-col items-center gap-2">
                 <Ionicons name="map" size={18} color={Colors.secondary} />
                 <Text className="flex-1 border-l border-dashed ml-[4px] border-primary "></Text>
@@ -45,18 +48,23 @@ export function CardReservation({
               </View>
             </View>
           </View>
-          <View className="flex-col justify-between gap-4 items-end">
-            <View className="items-end">
-              <Text className="text-primary text-sm font-medium">
-                Place réservée: {nbPlaceReserve}
-              </Text>
-            </View>
+          <View className="flex-col items-end justify-between gap-4">
             <View className="w-20 h-16 rounded-full bg-neutral-50">
               <Image
                 source={Images.Car}
                 className="w-full h-full"
                 resizeMode="contain"
               />
+            </View>
+            <View className="flex flex-row items-center">
+              <View className="flex flex-row items-center gap-2">
+                <CarFrontIcon className="w-2 h-2" size={18} />
+                <Text className="font-medium text-neutral-900">
+                  {nbPlaceReserve}
+                </Text>
+              </View>
+              <View className="h-4 mx-3 border-r border-neutral-300" />
+              <Text className="font-medium text-neutral-900">Ar {montant}</Text>
             </View>
           </View>
         </View>

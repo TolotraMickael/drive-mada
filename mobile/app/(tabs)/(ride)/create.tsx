@@ -1,29 +1,36 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import { View, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 
 import { vehicles } from "@/lib/vehicle";
 import { Button } from "@/components/button";
+import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
 import { TextInput } from "@/components/text-input";
 import { FieldInput } from "@/components/field-input";
-import { CardVehicle } from "@/components/card-vehicle";
 import { ItineraryPayload } from "@/types/itineraire";
-import { useAuthStore } from "@/store/auth-store";
+import { CardVehicle } from "@/components/card-vehicle";
+import { useVehiculeStore } from "@/store/vehicule.store";
 import { Envs } from "@/lib/config";
+import { Images } from "@/lib/images";
 
 export default function CreateRideScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
-  // const [selectedCar, setSelectedCard] = useState(2);
+  const { vehicules } = useVehiculeStore();
+
+  const vehiculeTypes = useMemo(
+    () => vehicules.filter((item) => item.id_vehicule !== 1),
+    [vehicules]
+  );
 
   const [data, setData] = useState<ItineraryPayload>({
-    vehiculeId: 2,
+    vehiculeId: vehiculeTypes[0]?.id_vehicule,
     depart: "",
     destination: "",
     prix: "",
     nombrePlace: "",
-    dateDepart: "2025-06-09 15:37:15",
+    dateDepart: new Date().toISOString(),
   });
 
   const handleSelectCar = (id: number) => {
@@ -74,19 +81,20 @@ export default function CreateRideScreen() {
           <View className="flex flex-col gap-4 p-6 bg-white rounded-lg">
             <FieldInput label="Type de véhicule">
               <View className="flex flex-row flex-wrap gap-3 mt-1">
-                {vehicles
-                  .filter((item) => item.id !== 1)
-                  .map((vehicle) => (
-                    <View key={vehicle.id} style={{ width: `${100 / 3 - 3}%` }}>
-                      <CardVehicle
-                        text={vehicle.label}
-                        imageSrc={vehicle.imageSrc}
-                        isActive={data.vehiculeId === vehicle.id}
-                        onPress={() => handleSelectCar(vehicle.id)}
-                        className="w-full"
-                      />
-                    </View>
-                  ))}
+                {vehiculeTypes.map((vehicle) => (
+                  <View
+                    key={vehicle.id_vehicule}
+                    style={{ width: `${100 / 3 - 3}%` }}
+                  >
+                    <CardVehicle
+                      text={vehicle.nom}
+                      imageSrc={Images.Car}
+                      isActive={data.vehiculeId === vehicle.id_vehicule}
+                      onPress={() => handleSelectCar(vehicle.id_vehicule)}
+                      className="w-full"
+                    />
+                  </View>
+                ))}
               </View>
             </FieldInput>
             <FieldInput label="Départ">

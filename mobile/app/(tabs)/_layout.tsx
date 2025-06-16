@@ -51,7 +51,7 @@ export default function AppLayout() {
           }}
         />
         <Tabs.Screen
-          name="reservation"
+          name="(reservation)"
           options={{
             tabBarIcon: ({ color, size }) => (
               <TicketsPlane size={size} color={color} />

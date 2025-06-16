@@ -49,18 +49,21 @@ export default function AccountScreen() {
 
   const handleUpdate = async () => {
     try {
-      const response = await fetch(`${Envs.apiUrl}/utilisateurs/${user?.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nom: userData.nom,
-          prenom: userData.prenom,
-          id_avatar: Number(userData.id_avatar),
-        }),
-      });
+      const response = await fetch(
+        `${Envs.apiUrl}/utilisateurs/${user?.id_utilisateur}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nom: userData.nom,
+            prenom: userData.prenom,
+            id_avatar: Number(userData.id_avatar),
+          }),
+        }
+      );
 
       const result = await response.json();
 
@@ -68,14 +71,13 @@ export default function AccountScreen() {
         console.log("Error =>", result.message);
       } else {
         setUser({
-          id: result.data.id_utilisateur,
+          id_utilisateur: result.data.id_utilisateur,
           nom: result.data.nom,
           prenom: result.data.prenom,
           email: result.data.email,
           telephone: result.data.telephone,
           id_avatar: result.data.id_avatar,
         });
-        console.log(result.data);
       }
     } catch (err) {
       console.log(err);
@@ -126,13 +128,9 @@ export default function AccountScreen() {
                   }))
                 }
               />
-              <TextInput
-                placeholder="Adresse email"
-                value={userData.email}
-                // readOnly
-              />
+              <TextInput placeholder="Adresse email" value={userData.email} />
               <View className="w-1/2">
-                <Button disabled={!user?.id} onPress={handleUpdate}>
+                <Button disabled={!user?.id_utilisateur} onPress={handleUpdate}>
                   Mettre à jour
                 </Button>
               </View>

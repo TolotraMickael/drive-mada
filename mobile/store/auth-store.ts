@@ -72,7 +72,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
     const asToken = await Storage.get("token");
     if (asToken !== null) {
       set(() => ({ token: asToken }));
-      get().getProfile();
+      await get().getProfile();
     }
   },
   setUser: (user: User) => {
@@ -83,21 +83,14 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
       const token = get().token;
       const response = await fetch(`${Envs.apiUrl}/utilisateurs/profile`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const result = await response.json();
       if (!response.ok) {
         console.log("Erreur", result.message);
       } else {
-        set({
-          user: {
-            ...result.data,
-            id: result.data.id_utilisateur,
-          },
-        });
+        set({ user: result.data });
       }
     } catch (error) {
       console.log(error);

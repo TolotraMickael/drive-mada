@@ -1,44 +1,50 @@
-import { useEffect, useState } from "react";
 import { Link } from "expo-router";
+import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Image,
-  ScrollView,
   Text,
-  TouchableOpacity,
   View,
   Platform,
+  ScrollView,
+  TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
 
+import { Envs } from "@/lib/config";
 import { Colors } from "@/lib/colors";
 import { Images } from "@/lib/images";
 import { Avatars } from "@/lib/avatars";
 import { Card } from "@/components/card";
-import { vehicles } from "@/lib/vehicle";
 import { Button } from "@/components/button";
+import { TItineraire } from "@/types/itineraire";
+import { useAuthStore } from "@/store/auth-store";
 import { TextInput } from "@/components/text-input";
 import { CardVehicle } from "@/components/card-vehicle";
-import { useAuthStore } from "@/store/auth-store";
-import { TItineraire } from "@/types/itineraire";
-import { Envs } from "@/lib/config";
+import { useVehiculeStore } from "@/store/vehicule.store";
 
 export default function HomeScreen() {
   const { token, user } = useAuthStore();
-  const [activeVehicle, setActiveVehicles] = useState(1);
   const [data, setData] = useState<TItineraire[]>([]);
+  const { vehicules } = useVehiculeStore();
+  const [filters, setFilters] = useState({
+    depart: "",
+    destination: "",
+    vehiculeType: vehicules[0]?.id_vehicule || 1,
+  });
 
   useEffect(() => {
     getListItineraires();
   }, []);
 
-  const getListItineraires = async () => {
+  const getListItineraires = async (params?: string) => {
     try {
-      const response = await fetch(`${Envs.apiUrl}/itineraires`, {
+      let url = `${Envs.apiUrl}/itineraires`;
+      if (params) url += `?${params}`;
+
+      const response = await fetch(url, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
 
@@ -52,6 +58,22 @@ export default function HomeScreen() {
     }
   };
 
+  const handleSearch = () => {
+    const searchParams = new URLSearchParams();
+    if (filters.depart.trim()) {
+      searchParams.append("depart", filters.depart);
+    }
+    if (filters.destination.trim()) {
+      searchParams.append("destination", filters.destination);
+    }
+    if (filters.vehiculeType !== 1) {
+      searchParams.append("id_vehicule", String(filters.vehiculeType));
+    }
+
+    const params = searchParams.toString();
+    getListItineraires(params);
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -59,7 +81,7 @@ export default function HomeScreen() {
     >
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-1 px-6">
@@ -96,13 +118,18 @@ export default function HomeScreen() {
             <View className="flex-col flex-1 gap-4 p-4 mb-8 bg-white rounded-lg">
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View className="flex flex-row items-center flex-1 gap-3 overflow-hidden">
-                  {vehicles.map((vehicle) => (
+                  {vehicules.map((vehicle) => (
                     <CardVehicle
-                      key={vehicle.id}
-                      text={vehicle.label}
+                      key={vehicle.id_vehicule}
+                      text={vehicle.nom}
                       imageSrc={Images.Car}
-                      isActive={activeVehicle === vehicle.id}
-                      onPress={() => setActiveVehicles(vehicle.id)}
+                      isActive={filters.vehiculeType === vehicle.id_vehicule}
+                      onPress={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          vehiculeType: vehicle.id_vehicule,
+                        }))
+                      }
                     />
                   ))}
                 </View>
@@ -113,14 +140,24 @@ export default function HomeScreen() {
                 icon={
                   <Ionicons name="map" size={20} color={Colors.placeholder} />
                 }
+                value={filters.depart}
+                onChangeText={(depart) =>
+                  setFilters((prev) => ({ ...prev, depart }))
+                }
               />
               <TextInput
                 placeholder="Destination"
                 icon={
                   <Ionicons name="location" size={20} color={Colors.primary} />
                 }
+                value={filters.destination}
+                onChangeText={(destination) =>
+                  setFilters((prev) => ({ ...prev, destination }))
+                }
               />
-              <Button containerClassName="flex-1">Rechercher</Button>
+              <Button containerClassName="flex-1" onPress={handleSearch}>
+                Rechercher
+              </Button>
             </View>
           </View>
           <View className="flex flex-col gap-4">

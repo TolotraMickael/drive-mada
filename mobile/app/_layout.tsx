@@ -1,14 +1,15 @@
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Stack, useRouter, useSegments } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-reanimated";
 
 import "../global.css";
 import { fonts } from "@/lib/fonts";
 import { useAuthStore } from "@/store/auth-store";
 import { SafeScreen } from "@/components/safe-screen";
+import { useVehiculeStore } from "@/store/vehicule.store";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,7 +20,9 @@ export default function RootLayout() {
   const { token, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    checkAuth();
+    checkAuth().then(async () => {
+      await useVehiculeStore.getState().getVehicules();
+    });
   }, []);
 
   useEffect(() => {

@@ -32,7 +32,7 @@ const payments: RadioButtonProps[] = [
 
 export default function Details() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const { id } = useLocalSearchParams();
   const [seat, setSeat] = useState(1);
   const [payment, setPayment] = useState("1");
@@ -42,6 +42,9 @@ export default function Details() {
   useEffect(() => {
     getItineraireById();
   }, []);
+
+  const isItineraryMine =
+    user?.id_utilisateur === data?.utilisateur.id_utilisateur;
 
   const getItineraireById = useCallback(async () => {
     const itineraireId = parseInt(id as string, 10);
@@ -91,7 +94,7 @@ export default function Details() {
       if (!response.ok) {
         console.log("Error =>", result.message);
       } else {
-        router.replace("/(tabs)/reservation");
+        router.replace("/(tabs)/(reservation)");
       }
     } catch (error) {
       console.log(error);
@@ -172,14 +175,12 @@ export default function Details() {
                   {data.vehicule.nom_vehicule}
                 </Text>
               </View>
-              <View className="flex justify-center items-end">
+              <View className="flex items-end justify-center">
                 <Text className="font-medium text-foreground">
                   {data.nombre_place} places
                 </Text>
                 <Text className="text-sm font-regular text-neutral-500">
-                  {data.place_disponible
-                    ? data.place_disponible + 1 - seat
-                    : null}{" "}
+                  {data.place_disponible ? data.place_disponible : null}{" "}
                   {placeDisponible === 0 ? (
                     <Text className="text-red-600">
                       Aucune place disponible
@@ -262,17 +263,24 @@ export default function Details() {
               </Text>
             </View>
 
-            <Button
-              onPress={handlReservation}
-              containerClassName="flex-1 mt-8"
-              disabled={placeDisponible === 0}
-            >
-              Réserver
-            </Button>
+            <View className="flex-1 mt-8">
+              <Button
+                onPress={handlReservation}
+                containerClassName="flex-1"
+                disabled={placeDisponible === 0 || isItineraryMine}
+              >
+                Réserver
+              </Button>
+            </View>
+            {isItineraryMine && (
+              <Text className="mt-2 text-sm text-red-700 font-regular">
+                Vous ne pouvez pas réserver votre propre trajet.
+              </Text>
+            )}
           </View>
         </ScrollView>
       ) : (
-        <View>
+        <View className="p-6">
           <Text>ID incorrect</Text>
         </View>
       )}

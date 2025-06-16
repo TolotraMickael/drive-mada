@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
 import { Link } from "expo-router";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 
+import { Envs } from "@/lib/config";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty";
 import { AppHeader } from "@/components/app-header";
-import { Envs } from "@/lib/config";
 import { useAuthStore } from "@/store/auth-store";
 import { TReservation } from "@/types/reservation";
 import { CardReservation } from "@/components/card-reservation";
@@ -15,10 +15,10 @@ export default function ReservationScreen() {
   const [data, setData] = useState<TReservation[]>([]);
 
   useEffect(() => {
-    getUserReservation();
+    getUserReservations();
   });
 
-  const getUserReservation = async () => {
+  const getUserReservations = async () => {
     try {
       const response = await fetch(`${Envs.apiUrl}/reservations/me`, {
         method: "GET",
@@ -31,7 +31,7 @@ export default function ReservationScreen() {
       if (!response.ok) {
         console.log("Error", result.message);
       } else {
-        setData(result);
+        setData(result.data);
       }
     } catch (error) {
       console.log(error);
@@ -53,25 +53,30 @@ export default function ReservationScreen() {
               <CardReservation
                 key={reservation.id_reservation}
                 href={{
-                  pathname: "/(tabs)/(home)/details/[id]",
+                  pathname: "/(tabs)/(reservation)/details/[id]",
                   params: { id: reservation.id_reservation },
                 }}
                 depart={reservation.itineraire.depart}
                 destination={reservation.itineraire.destination}
                 dateDepart={reservation.itineraire.date_depart}
                 nbPlaceReserve={reservation.nombre_place_reserve}
+                montant={
+                  reservation.nombre_place_reserve * reservation.itineraire.prix
+                }
               />
             ))}
           </View>
         </ScrollView>
       ) : (
-        <EmptyState message="Aucune réservation trouvée, Vous pouvez rechercher en cliquant le lien ci-dessous">
-          <Link href="/(tabs)/(home)" asChild>
-            <Button variant="outlined" containerClassName="mt-6">
-              Rechercher
-            </Button>
-          </Link>
-        </EmptyState>
+        <View className="flex-1 pb-16">
+          <EmptyState message="Aucune réservation trouvée, Vous pouvez rechercher en cliquant le lien ci-dessous">
+            <Link href="/(tabs)/(home)" asChild>
+              <Button variant="outlined" containerClassName="mt-6">
+                Rechercher
+              </Button>
+            </Link>
+          </EmptyState>
+        </View>
       )}
     </View>
   );

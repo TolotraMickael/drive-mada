@@ -29,7 +29,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autoriser DriveMada à accéder à votre caméra."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

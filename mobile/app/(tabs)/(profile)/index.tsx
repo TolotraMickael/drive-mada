@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link, LinkProps } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -7,8 +6,6 @@ import { Colors } from "@/lib/colors";
 import { Avatars } from "@/lib/avatars";
 import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
-import { User } from "@/types/user";
-import { Envs } from "@/lib/config";
 
 function MenuItem({ label, href }: { label: string; href: LinkProps["href"] }) {
   return (
@@ -25,31 +22,6 @@ function MenuItem({ label, href }: { label: string; href: LinkProps["href"] }) {
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
-  // const [data, setData] = useState<User[]>([]);
-
-  // useEffect(() => {
-  //   getUserProfil();
-  // });
-
-  // const getUserProfil = async () => {
-  //   try {
-  //     const response = await fetch(`${Envs.apiUrl}/utilisateurs/profile`, {
-  //       method: "GET",
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     const result = await response.json();
-  //     if (!response.ok) {
-  //       console.log("Erreur", result.message);
-  //     } else {
-  //       setData(result);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   const handleLogout = async () => {
     await logout();
