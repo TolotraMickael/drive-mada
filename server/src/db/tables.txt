@@ -1,0 +1,108 @@
+// Utilisateurs
+CREATE TABLE utilisateurs (
+    id_utilisateur INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(255) NOT NULL,
+    prenom VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    telephone VARCHAR(32),
+    id_avatar INT,
+    mot_de_passe VARCHAR(64) NOT NULL,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_mise_a_jour DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+SELECT * FROM utilisateurs;
+
+SELECT * FROM utilisateurs
+WHERE id_utilisateur = 1;
+
+DROP TABLE utilisateurs;
+
+
+// Itineraires
+CREATE TABLE itineraires(
+    id_itineraire INT PRIMARY KEY AUTO_INCREMENT, 
+    depart VARCHAR(255),
+    destination VARCHAR(255),
+    prix DECIMAL, 
+    statut VARCHAR(32), 
+    nombre_place INT DEFAULT 0,
+    date_depart DATETIME NOT NULL, 
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP, 
+    date_mise_a_jour DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id_paiement INT,
+    id_vehicule INT,
+    id_utilisateur INT,
+    FOREIGN KEY(id_paiement) REFERENCES paiements(id_paiement),
+    FOREIGN KEY(id_vehicule) REFERENCES vehicules(id_vehicule),
+    FOREIGN KEY(id_utilisateur) REFERENCES utilisateurs(id_utilisateur)
+);
+
+SELECT * FROM itineraires;
+
+SELECT * FROM itineraires
+WHERE id_itineraire = 1;
+
+DROP TABLE itineraires;
+
+
+// Reservations
+CREATE TABLE reservations( 
+    id_reservation INT PRIMARY KEY AUTO_INCREMENT, 
+    nombre_place_reserve INT, 
+    statut VARCHAR(32), 
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP, 
+    date_mise_a_jour DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id_utilisateur INT,
+    id_itineraire INT,
+    id_paiement INT,
+    FOREIGN KEY(id_utilisateur) REFERENCES utilisateurs(id_utilisateur),
+    FOREIGN KEY(id_itineraire) REFERENCES itineraires(id_itineraire),
+    FOREIGN KEY(id_paiement) REFERENCES paiements(id_paiement)
+);
+
+SELECT * FROM reservations;
+
+SELECT * FROM reservations
+WHERE id_reservation = 1;
+
+SELECT nom, prenom, email FROM reservations
+WHERE id_reservation = 1;
+
+DROP TABLE reservations;
+
+
+// Vehicules
+CREATE TABLE vehicules( 
+    id_vehicule INT PRIMARY KEY AUTO_INCREMENT, 
+    nom VARCHAR(255) NOT NULL,
+    photo VARCHAR(255), 
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP, 
+    date_mise_a_jour DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+SELECT * FROM vehicules;
+
+DROP TABLE vehicules;
+
+
+// Paiements
+CREATE TABLE paiements( 
+    id_paiement INT PRIMARY KEY AUTO_INCREMENT, 
+    type VARCHAR(32),
+    statut VARCHAR(32),
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP, 
+    date_mise_a_jour DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+SELECT * FROM paiements;
+
+DROP TABLE paiements;
+
+// Jointure
+SELECT i.*, v.id_vehicule, v.nom AS vehicule_nom, u.id_utilisateur, u.nom AS utilisateur_nom, p.id_paiement 
+FROM itineraires i
+JOIN vehicules v ON i.id_vehicule = v.id_vehicule
+JOIN utilisateurs u ON i.id_utilisateur = u.id_utilisateur
+LEFT JOIN paiements p ON i.id_paiement = p.id_paiement 
+WHERE 1;
