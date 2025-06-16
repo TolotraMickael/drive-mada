@@ -21,6 +21,20 @@ export type TItineraire = {
     nom_vehicule: string;
   };
   place_disponible?: number;
+  reservations?: [
+    {
+      id_itineraire: number;
+      id_reservation: number;
+      nombre_place_reserve: number;
+      utilisateur: {
+        id: number;
+        id_avatar: number;
+        nom: string;
+        prenom: string;
+        telephone: string;
+      };
+    }
+  ];
 };
 
 export type ItineraryPayload = {

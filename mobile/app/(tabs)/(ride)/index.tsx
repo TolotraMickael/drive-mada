@@ -69,7 +69,7 @@ export default function RideScreen() {
               <CardItinerary
                 key={itineraire.id_itineraire}
                 href={{
-                  pathname: "/",
+                  pathname: "/(tabs)/(ride)/details/[id]",
                   params: { id: itineraire.id_itineraire },
                 }}
                 depart={itineraire.depart}
@@ -82,13 +82,13 @@ export default function RideScreen() {
           </View>
         </ScrollView>
       ) : (
-        <View className="pb-48">
-          <EmptyState message="Aucun trajet pour le moment. Vous pouvez créer et partager votre trajet.">
-            <Link href="/(tabs)/(ride)/create" asChild>
-              <Button containerClassName="mt-6">Créer un trajet</Button>
-            </Link>
-          </EmptyState>
-        </View>
+        <EmptyState message="Aucun trajet pour le moment. Vous pouvez créer et partager votre trajet.">
+          <Link href="/(tabs)/(ride)/create" asChild>
+            <Button variant="outlined" containerClassName="mt-6">
+              Créer un trajet
+            </Button>
+          </Link>
+        </EmptyState>
       )}
     </View>
   );

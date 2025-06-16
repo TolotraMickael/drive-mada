@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { useCallback, useEffect, useState } from "react";
 import {
   Image,
   Text,
@@ -37,7 +37,7 @@ export default function HomeScreen() {
     getListItineraires();
   }, []);
 
-  const getListItineraires = async (params?: string) => {
+  const getListItineraires = useCallback(async (params?: string) => {
     try {
       let url = `${Envs.apiUrl}/itineraires`;
       if (params) url += `?${params}`;
@@ -56,7 +56,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
 
   const handleSearch = () => {
     const searchParams = new URLSearchParams();

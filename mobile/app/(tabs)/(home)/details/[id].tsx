@@ -75,7 +75,6 @@ export default function Details() {
   const handlReservation = async () => {
     try {
       const apiUrl = `${Envs.apiUrl}/reservations`;
-
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {

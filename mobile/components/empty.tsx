@@ -8,9 +8,9 @@ type Props = PropsWithChildren & {
 
 export function EmptyState({ message, children }: Props) {
   return (
-    <View className="flex flex-col gap-6 mb-12 min-h-[80%]">
+    <View className="flex-col gap-6 min-h-[80%]">
       <View
-        className="flex items-center justify-center"
+        className="flex items-center align-center justify-center pb-52"
         style={{ minHeight: "100%" }}
       >
         <Image

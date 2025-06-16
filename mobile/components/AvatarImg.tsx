@@ -2,7 +2,7 @@ import { StyleSheet, View, Image } from "react-native";
 import { Colors } from "@/lib/colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-export function Avatar({ source, size = 38, style = {} }: any) {
+export function AvatarImg({ source, size = 38, style = {} }: any) {
   const url = source;
   return (
     <View>

@@ -92,6 +92,7 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
       } else {
         set({ user: result.data });
       }
+      console.log(result);
     } catch (error) {
       console.log(error);
     }
