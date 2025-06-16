@@ -1,44 +1,26 @@
-import { StyleSheet, View, Image } from "react-native";
-import { Colors } from "@/lib/colors";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
-export function Avatar({ source, size = 38, style = {} }: any) {
-  const url = source;
+import { AvatarSelector } from "@/components/avatar-selector";
+import { useAvatarSelector } from "@/hooks/use-avatar-selector";
+
+export function Avatar() {
+  const { avatarId, handleNext, handlePrev } = useAvatarSelector();
+
   return (
     <View>
-      {source ? (
-        <Image
-          style={{ ...styles.image, width: size, height: size, ...style }}
-          source={url}
-        />
-      ) : (
-        <View
-          style={{ ...styles.noImage, width: size, height: size, ...style }}
+      <AvatarSelector
+        avatarId={avatarId}
+        handlePrev={handlePrev}
+        handleNext={handleNext}
+      />
+      <View className="mt-6">
+        <TouchableOpacity
+          className="flex items-center justify-center w-auto px-6 rounded-lg h-11 bg-primary"
+          onPress={() => Alert.alert(`Selected avatar: ${avatarId}`)}
         >
-          <Ionicons style={styles.iconUser} size={20} name="person-outline" />
-        </View>
-      )}
+          <Text className="font-semibold text-white">Done</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  image: {
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: `${Colors.white}9a`,
-  },
-  noImage: {
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: `${Colors.white}5a`,
-    backgroundColor: `${Colors.borderColor}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "white",
-  },
-  iconUser: {
-    color: "white",
-  },
-});
