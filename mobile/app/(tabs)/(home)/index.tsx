@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
+import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   Image,
   Text,
@@ -8,8 +9,8 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
-  KeyboardAvoidingView,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from "react-native";
 
 import { Envs } from "@/lib/config";
@@ -36,9 +37,11 @@ export default function HomeScreen() {
     vehiculeType: vehicules[0]?.id_vehicule || 1,
   });
 
-  useEffect(() => {
-    getListItineraires();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getListItineraires();
+    }, [])
+  );
 
   const getListItineraires = useCallback(async (params?: string) => {
     setLoading(true);

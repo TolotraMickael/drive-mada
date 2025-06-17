@@ -1,33 +1,52 @@
 import { X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Toast } from "toastify-react-native";
-import { Modal, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  Text,
+  View,
+  Modal,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import DateTimePicker, {
+  DateTimePickerEvent,
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
 
 import { Envs } from "@/lib/config";
 import { Colors } from "@/lib/colors";
+import { getAuthToken } from "@/lib/token";
+import { formatDateTime } from "@/lib/date";
 import { Button } from "@/components/button";
 import { TItineraire } from "@/types/itineraire";
 import { TextInput } from "@/components/text-input";
 import { FieldInput } from "@/components/field-input";
-import { getAuthToken } from "@/lib/token";
 
 type Props = {
   open: boolean;
   onClose: () => void;
+  refresh: () => void;
   data: TItineraire | null;
 };
 
-export function EditModal({ open, onClose, data: itineraireData }: Props) {
+export function EditModal({
+  open,
+  onClose,
+  refresh,
+  data: itineraireData,
+}: Props) {
+  const [loading, setLoading] = useState(false);
+  const [show, setShow] = useState(false);
+
   const [data, setData] = useState({
     vehiculeId: 0,
     depart: "",
     prix: "",
     destination: "",
     nombrePlace: "",
-    dateDepart: new Date().toISOString(),
+    dateDepart: new Date(),
   });
-
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setData(() => ({
@@ -36,9 +55,47 @@ export function EditModal({ open, onClose, data: itineraireData }: Props) {
       prix: String(itineraireData?.prix || ""),
       destination: itineraireData?.destination || "",
       nombrePlace: String(itineraireData?.nombre_place || ""),
-      dateDepart: itineraireData?.date_depart || new Date().toISOString(),
+      dateDepart: itineraireData?.date_depart
+        ? new Date(itineraireData?.date_depart)
+        : new Date(),
     }));
   }, [open, itineraireData]);
+
+  const openDateTimePicker = () => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        mode: "date",
+        is24Hour: true,
+        value: data.dateDepart,
+        minimumDate: new Date(),
+        onChange: (_, selectedDate) => {
+          if (!selectedDate) return;
+
+          DateTimePickerAndroid.open({
+            value: selectedDate,
+            mode: "time",
+            is24Hour: true,
+            onChange: (_event, selectedTime) => {
+              if (!selectedTime) return;
+              const combined = new Date(selectedDate);
+              combined.setHours(selectedTime.getHours());
+              combined.setMinutes(selectedTime.getMinutes());
+              setData((prev) => ({ ...prev, dateDepart: combined }));
+            },
+          });
+        },
+      });
+    } else {
+      setShow(true);
+    }
+  };
+
+  const onDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (selectedDate) {
+      setData((data) => ({ ...data, dateDepart: selectedDate }));
+      setShow(false);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!itineraireData?.id_itineraire) return;
@@ -71,7 +128,7 @@ export function EditModal({ open, onClose, data: itineraireData }: Props) {
       const result = await response.json();
 
       if (result) {
-        onClose();
+        refresh();
         Toast.show({
           type: "success",
           visibilityTime: 5000,
@@ -153,7 +210,28 @@ export function EditModal({ open, onClose, data: itineraireData }: Props) {
                   }}
                 />
               </FieldInput>
-              <FieldInput label="Date de départ"></FieldInput>
+              <FieldInput label="Date de départ">
+                <TouchableOpacity
+                  onPress={openDateTimePicker}
+                  className="flex flex-row items-center justify-start h-12 px-4 rounded-lg bg-background"
+                >
+                  <Text className="w-full font-regular">
+                    {formatDateTime(data.dateDepart.toISOString(), {
+                      dateStyle: "long",
+                      timeStyle: "short",
+                    })}
+                  </Text>
+                </TouchableOpacity>
+                {Platform.OS === "ios" && show && (
+                  <DateTimePicker
+                    mode="datetime"
+                    display="default"
+                    value={data.dateDepart}
+                    onChange={onDateChange}
+                    minimumDate={new Date()}
+                  />
+                )}
+              </FieldInput>
             </View>
           </ScrollView>
           <View className="flex flex-row items-end justify-center w-full gap-4 my-4">

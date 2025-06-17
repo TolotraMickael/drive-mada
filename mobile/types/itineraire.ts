@@ -43,7 +43,7 @@ export type ItineraryPayload = {
   destination: string;
   prix: string;
   nombrePlace: string;
-  dateDepart: string;
+  dateDepart: Date;
 };
 
 export type TItineraryStatus = "WAITING" | "IN_PROGRESS" | "ARRIVED";

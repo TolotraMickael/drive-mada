@@ -1,7 +1,18 @@
-import { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import { Toast } from "toastify-react-native";
-import { View, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
+import DatetimePicker, {
+  DateTimePickerEvent,
+  DateTimePickerAndroid,
+} from "@react-native-community/datetimepicker";
+import {
+  View,
+  Text,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+} from "react-native";
 
 import { Envs } from "@/lib/config";
 import { Images } from "@/lib/images";
@@ -13,12 +24,14 @@ import { FieldInput } from "@/components/field-input";
 import { ItineraryPayload } from "@/types/itineraire";
 import { CardVehicle } from "@/components/card-vehicle";
 import { useVehiculeStore } from "@/store/vehicule.store";
+import { formatDateTime } from "@/lib/date";
 
 export default function CreateRideScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
   const { vehicules } = useVehiculeStore();
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const vehiculeTypes = useMemo(
     () => vehicules.filter((item) => item.id_vehicule !== 1),
@@ -31,8 +44,44 @@ export default function CreateRideScreen() {
     destination: "",
     prix: "",
     nombrePlace: "",
-    dateDepart: new Date().toISOString(),
+    dateDepart: new Date(),
   });
+
+  const openDateTimePicker = () => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        mode: "date",
+        is24Hour: true,
+        value: data.dateDepart,
+        minimumDate: new Date(),
+        onChange: (_, selectedDate) => {
+          if (!selectedDate) return;
+
+          DateTimePickerAndroid.open({
+            value: selectedDate,
+            mode: "time",
+            is24Hour: true,
+            onChange: (_event, selectedTime) => {
+              if (!selectedTime) return;
+              const combined = new Date(selectedDate);
+              combined.setHours(selectedTime.getHours());
+              combined.setMinutes(selectedTime.getMinutes());
+              setData((prev) => ({ ...prev, dateDepart: combined }));
+            },
+          });
+        },
+      });
+    } else {
+      setOpen(true);
+    }
+  };
+
+  const onDateChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (selectedDate) {
+      setData((data) => ({ ...data, dateDepart: selectedDate }));
+      setOpen(false);
+    }
+  };
 
   const handleSelectCar = (id: number) => {
     setData((state) => ({ ...state, vehiculeId: id }));
@@ -54,6 +103,7 @@ export default function CreateRideScreen() {
           ...data,
           prix: Number(data.prix),
           nombrePlace: Number(data.nombrePlace),
+          dateDepart: data.dateDepart.toISOString(),
         }),
       });
 
@@ -154,11 +204,34 @@ export default function CreateRideScreen() {
                 }}
               />
             </FieldInput>
-            <FieldInput label="Date de départ"></FieldInput>
+            <FieldInput label="Date de départ">
+              <TouchableOpacity
+                onPress={openDateTimePicker}
+                className="flex flex-row items-center justify-start h-12 px-4 rounded-lg bg-background"
+              >
+                <Text className="w-full font-regular">
+                  {formatDateTime(data.dateDepart.toISOString(), {
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  })}
+                </Text>
+              </TouchableOpacity>
+              {Platform.OS === "ios" && open && (
+                <DatetimePicker
+                  mode="datetime"
+                  display="default"
+                  value={data.dateDepart}
+                  onChange={onDateChange}
+                  minimumDate={new Date()}
+                  locale="fr-FR"
+                />
+              )}
+            </FieldInput>
             <View className="mt-3">
               <Button
                 containerClassName="flex-1"
                 onPress={handlCreateItinerary}
+                disabled={loading}
               >
                 Créer et publier
               </Button>

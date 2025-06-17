@@ -1,4 +1,6 @@
+import { Toast } from "toastify-react-native";
 import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, View, Text, Image, TouchableOpacity } from "react-native";
 import {
@@ -28,7 +30,6 @@ import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
 import { EditModal } from "./_modals/update";
 import { CheckinModal } from "./_modals/check-in";
-import { Toast } from "toastify-react-native";
 import { delay } from "@/lib/delay";
 
 export default function DetailsItineraire() {
@@ -47,9 +48,11 @@ export default function DetailsItineraire() {
 
   const hasReservation = (data?.reservations?.length || 0) > 0;
 
-  useEffect(() => {
-    getDetailItineraireById();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getDetailItineraireById();
+    }, [])
+  );
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -86,6 +89,11 @@ export default function DetailsItineraire() {
       setLoading(false);
     }
   }, [id]);
+
+  const handleRefresh = () => {
+    getDetailItineraireById();
+    setOpenModal(false);
+  };
 
   const handleOpenScan = useCallback(async () => {
     if (!permission?.granted) {
@@ -330,7 +338,12 @@ export default function DetailsItineraire() {
             </View>
           </ScrollView>
 
-          <EditModal data={data} open={openModal} onClose={handleCloseModal} />
+          <EditModal
+            data={data}
+            open={openModal}
+            refresh={handleRefresh}
+            onClose={handleCloseModal}
+          />
           <CheckinModal
             reservationId={reservationId}
             onClose={handleCloseCheckinModal}

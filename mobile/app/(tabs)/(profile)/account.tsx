@@ -9,13 +9,13 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 
+import { Envs } from "@/lib/config";
 import { Avatars } from "@/lib/avatars";
 import { Button } from "@/components/button";
+import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
 import { TextInput } from "@/components/text-input";
 import { AvatarSelector } from "@/components/avatar-selector";
-import { useAuthStore } from "@/store/auth-store";
-import { Envs } from "@/lib/config";
 
 export default function AccountScreen() {
   const router = useRouter();

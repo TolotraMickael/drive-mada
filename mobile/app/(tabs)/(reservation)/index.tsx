@@ -1,24 +1,27 @@
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
 import { Envs } from "@/lib/config";
+import { Colors } from "@/lib/colors";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty";
-import { AppHeader } from "@/components/app-header";
 import { useAuthStore } from "@/store/auth-store";
 import { TReservation } from "@/types/reservation";
+import { AppHeader } from "@/components/app-header";
 import { CardReservation } from "@/components/card-reservation";
-import { Colors } from "@/lib/colors";
 
 export default function ReservationScreen() {
   const { token } = useAuthStore();
   const [data, setData] = useState<TReservation[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    getUserReservations();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getUserReservations();
+    }, [])
+  );
 
   const getUserReservations = async () => {
     setLoading(true);

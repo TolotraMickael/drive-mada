@@ -1,6 +1,7 @@
 import QRCode from "react-native-qrcode-svg";
 import { PhoneIcon } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   Text,
@@ -44,9 +45,11 @@ export default function ReservationDetails() {
   const { id } = useLocalSearchParams();
   const [data, setData] = useState<TReservation | null>(null);
 
-  useEffect(() => {
-    getReservationById();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getReservationById();
+    }, [])
+  );
 
   const getReservationById = useCallback(async () => {
     const reservationId = parseInt(id as string, 10);

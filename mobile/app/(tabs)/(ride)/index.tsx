@@ -1,32 +1,27 @@
 import { Link } from "expo-router";
 import { useCallback, useState, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { useFocusEffect } from "expo-router";
 
-import { Button } from "@/components/button";
-import { EmptyState } from "@/components/empty";
-import { AppHeader } from "@/components/app-header";
-import { CardItinerary } from "@/components/card-itinerary";
-
-import { useAuthStore } from "@/store/auth-store";
-import { TItineraire } from "@/types/itineraire";
 import { Envs } from "@/lib/config";
 import { Colors } from "@/lib/colors";
+import { Button } from "@/components/button";
+import { EmptyState } from "@/components/empty";
+import { TItineraire } from "@/types/itineraire";
+import { useAuthStore } from "@/store/auth-store";
+import { AppHeader } from "@/components/app-header";
+import { CardItinerary } from "@/components/card-itinerary";
 
 export default function RideScreen() {
   const { token } = useAuthStore();
   const [data, setData] = useState<TItineraire[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // useFocusEffect(() => {
-  //   useCallback(() => {
-  //     getUserItineraires();
-  //   }, []);
-  // });
-
-  useEffect(() => {
-    getUserItineraires();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getUserItineraires();
+    }, [])
+  );
 
   const getUserItineraires = async () => {
     setLoading(true);

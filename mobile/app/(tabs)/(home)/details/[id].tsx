@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Map, MapPin, Plus, Minus, PhoneIcon } from "lucide-react-native";
 import { RadioButtonProps, RadioGroup } from "react-native-radio-buttons-group";
@@ -46,9 +47,11 @@ export default function Details() {
   const [data, setData] = useState<TItineraire | null>(null);
   const [placeDisponible, setPlaceDisponible] = useState(0);
 
-  useEffect(() => {
-    getItineraireById();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getItineraireById();
+    }, [])
+  );
 
   const isItineraryMine =
     user?.id_utilisateur === data?.utilisateur.id_utilisateur;
@@ -139,7 +142,7 @@ export default function Details() {
           <View className="mt-6">
             <View className="flex-row flex-1 w-full pb-4 border-b border-neutral-200/50">
               <View className="w-[60%] px-4l">
-                <Text className="font-regular text-neutral-600">
+                <Text className="capitalize font-regular text-neutral-600">
                   {formatDateTime(data.date_depart, {
                     dateStyle: "full",
                   })}
