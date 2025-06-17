@@ -1,33 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, View, Text, Image, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ScrollView, View, Text, Image, TouchableOpacity } from "react-native";
 import {
-  BarcodeScanningResult,
   CameraType,
   CameraView,
   useCameraPermissions,
+  BarcodeScanningResult,
 } from "expo-camera";
 import {
   Pencil,
   Map,
   MapPin,
   Armchair,
-  ChevronDown,
   ChevronUp,
+  ChevronDown,
   SwitchCamera,
-  QrCode,
 } from "lucide-react-native";
 
 import { Envs } from "@/lib/config";
 import { Images } from "@/lib/images";
 import { Colors } from "@/lib/colors";
+import { Avatars } from "@/lib/avatars";
 import { formatDateTime } from "@/lib/date";
 import { Button } from "@/components/button";
 import { TItineraire } from "@/types/itineraire";
 import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
-import { Avatars } from "@/lib/avatars";
-import { EditModal } from "./_modal";
+import { EditModal } from "./_modals/update";
+import { CheckinModal } from "./_modals/check-in";
 
 export default function DetailsItineraire() {
   const router = useRouter();
@@ -37,6 +37,7 @@ export default function DetailsItineraire() {
   const [data, setData] = useState<TItineraire | null>(null);
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [openCheckinModal, setOpenCheckinModal] = useState(true);
 
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
@@ -49,6 +50,10 @@ export default function DetailsItineraire() {
 
   const handleCloseModal = () => {
     setOpenModal(false);
+  };
+
+  const handleCloseCheckinModal = () => {
+    setOpenCheckinModal(false);
   };
 
   const getDetailItineraireById = useCallback(async () => {
@@ -193,53 +198,52 @@ export default function DetailsItineraire() {
           </View>
         </View>
 
-        {(data.reservations?.length || 0) > 0 && (
-          <View className="p-6 mt-6 bg-white rounded-lg">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-lg font-medium">
-                Réservations ({data.nombre_place - (data.place_disponible || 0)}
-                )
-              </Text>
+        <View className="p-6 mt-6 bg-white rounded-lg">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-lg font-medium">
+              Réservations ({data.nombre_place - (data.place_disponible || 0)})
+            </Text>
+            {!!data.reservations?.length && (
               <TouchableOpacity
-                className="p-2"
+                className="p-2 rounded-lg"
                 onPress={() => setShowReservations(!showReservations)}
               >
                 {showReservations ? <ChevronUp /> : <ChevronDown />}
               </TouchableOpacity>
-            </View>
-            {showReservations && (
-              <View className="mt-4">
-                {data.reservations?.map((per, index, array) => (
-                  <View
-                    key={per.id_reservation}
-                    className={`flex flex-row items-center justify-between py-3 ${
-                      index !== array.length - 1
-                        ? "border-b-2 border-secondary"
-                        : ""
-                    } rounded-xl`}
-                  >
-                    <View className="flex-row gap-4">
-                      <Image
-                        source={Avatars[per.utilisateur.id_avatar]}
-                        resizeMode="contain"
-                        className="rounded-full w-14 h-14 bg-neutral-100"
-                      />
-                      <View className="">
-                        <Text className="font-medium line-clamp-1">{`${per.utilisateur.nom} ${per.utilisateur.prenom}`}</Text>
-                        <Text className="font-regular text-neutral-500">
-                          {per.utilisateur.telephone}
-                        </Text>
-                      </View>
-                    </View>
-                    <Text className="w-8 pt-1 text-center bg-white rounded-full shadow-lg text-neutral-500 font-regular text-m">
-                      {per.nombre_place_reserve}
-                    </Text>
-                  </View>
-                ))}
-              </View>
             )}
           </View>
-        )}
+          {showReservations && (
+            <View className="mt-4">
+              {data.reservations?.map((per, index, array) => (
+                <View
+                  key={per.id_reservation}
+                  className={`flex flex-row items-center justify-between py-3 ${
+                    index !== array.length - 1
+                      ? "border-b-2 border-secondary"
+                      : ""
+                  } rounded-lg`}
+                >
+                  <View className="flex-row gap-4">
+                    <Image
+                      source={Avatars[per.utilisateur.id_avatar]}
+                      resizeMode="contain"
+                      className="rounded-full w-14 h-14 bg-neutral-100"
+                    />
+                    <View className="">
+                      <Text className="font-medium line-clamp-1">{`${per.utilisateur.nom} ${per.utilisateur.prenom}`}</Text>
+                      <Text className="font-regular text-neutral-500">
+                        {per.utilisateur.telephone}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text className="w-8 pt-1 text-center bg-white rounded-full shadow-lg text-neutral-500 font-regular text-m">
+                    {per.nombre_place_reserve}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
 
         <View className="flex items-center justify-center p-6 mt-6 bg-white rounded-lg">
           <View className="mb-6">
@@ -294,6 +298,7 @@ export default function DetailsItineraire() {
       </ScrollView>
 
       <EditModal data={data} open={openModal} onClose={handleCloseModal} />
+      <CheckinModal open={openCheckinModal} onClose={handleCloseCheckinModal} />
     </View>
   );
 }

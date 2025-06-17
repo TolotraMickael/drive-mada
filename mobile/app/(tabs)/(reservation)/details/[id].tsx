@@ -1,12 +1,13 @@
 import QRCode from "react-native-qrcode-svg";
+import { PhoneIcon } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { PhoneIcon } from "lucide-react-native";
 import {
   Text,
   View,
   Image,
   Modal,
+  Linking,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
@@ -68,6 +69,11 @@ export default function ReservationDetails() {
       console.log(err);
     }
   }, [id]);
+
+  const openDialer = (phoneNumber?: string) => {
+    if (!phoneNumber) return;
+    Linking.openURL(`tel:${phoneNumber}`);
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -142,7 +148,10 @@ export default function ReservationDetails() {
                 {data.utilisateur.telephone || ""}
               </Text>
             </View>
-            <TouchableOpacity className="items-center justify-center w-12 h-12 ml-auto border rounded-lg border-neutral-200">
+            <TouchableOpacity
+              onPress={() => openDialer(data.utilisateur?.telephone)}
+              className="items-center justify-center w-12 h-12 ml-auto border rounded-lg border-neutral-200"
+            >
               <PhoneIcon color={Colors.icon} size={18} />
             </TouchableOpacity>
           </View>

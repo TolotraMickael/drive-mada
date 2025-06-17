@@ -11,7 +11,7 @@ export const Colors = {
   placeholder: "#adadad",
   icon: "#53555a",
   success: "#18a527",
-  warning: "",
+  warning: "#b68d08",
   error: "#dc2626",
   divider: "#B9B9B9",
   searchInputBg: "#e3e3e3",

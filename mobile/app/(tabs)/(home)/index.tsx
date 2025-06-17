@@ -176,7 +176,7 @@ export default function HomeScreen() {
                 <ActivityIndicator size="large" color={Colors.primary} />
               </View>
             ) : (
-              <View className="flex flex-col gap-6">
+              <View className="flex flex-col gap-4">
                 {data.map((itineraire) => (
                   <Card
                     key={itineraire.id_itineraire}

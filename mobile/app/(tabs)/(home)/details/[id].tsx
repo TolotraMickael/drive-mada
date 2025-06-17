@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Map, MapPin, Plus, Minus } from "lucide-react-native";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Map, MapPin, Plus, Minus, PhoneIcon } from "lucide-react-native";
 import { RadioButtonProps, RadioGroup } from "react-native-radio-buttons-group";
+import {
+  Text,
+  View,
+  Image,
+  Linking,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 
 import { Envs } from "@/lib/config";
 import { Images } from "@/lib/images";
@@ -108,6 +115,11 @@ export default function Details() {
     setSeat((prev) => (prev + 1 <= placeDisponible ? prev + 1 : prev));
   };
 
+  const openDialer = (phoneNumber?: string) => {
+    if (!phoneNumber) return;
+    Linking.openURL(`tel:${phoneNumber}`);
+  };
+
   return (
     <View className="flex-1 bg-background">
       <AppHeader title="Réservation trajet" onGoBack={() => router.back()} />
@@ -191,7 +203,7 @@ export default function Details() {
               </View>
             </View>
 
-            <View className="flex flex-row items-center gap-4 px-6 py-3 mt-6 bg-white rounded-xl">
+            <View className="flex flex-row items-center gap-4 p-6 mt-6 bg-white rounded-xl">
               {data.utilisateur.id_avatar !== null ? (
                 <Image
                   source={Avatars[data.utilisateur.id_avatar]}
@@ -205,6 +217,12 @@ export default function Details() {
                   {data.utilisateur.telephone}
                 </Text>
               </View>
+              <TouchableOpacity
+                onPress={() => openDialer(data.utilisateur?.telephone)}
+                className="items-center justify-center w-12 h-12 ml-auto border rounded-lg border-neutral-200"
+              >
+                <PhoneIcon color={Colors.icon} size={18} />
+              </TouchableOpacity>
             </View>
 
             <View className="mt-8 border-b border-neutral-200/50" />

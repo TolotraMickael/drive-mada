@@ -55,7 +55,7 @@ export default function RideScreen() {
   return (
     <View className="flex-1 bg-background">
       <AppHeader title="Mes trajets" />
-      {loading ? (
+      {loading && data.length === 0 ? (
         <View className="flex items-center justify-center w-full h-32">
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
