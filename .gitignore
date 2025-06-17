@@ -1,1 +1,7 @@
 .expo/
+
+mobile/.env
+mobile/node_modules
+
+server/.env
+server/node_modules

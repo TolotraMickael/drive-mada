@@ -21,6 +21,8 @@ async function login(req, res) {
       [email]
     );
 
+    console.log(rows);
+
     if (rows.length === 0) {
       return res.status(400).json({ message: "Adresse email n'existe pas." });
     } else {

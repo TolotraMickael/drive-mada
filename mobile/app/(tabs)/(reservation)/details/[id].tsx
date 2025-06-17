@@ -127,7 +127,7 @@ export default function ReservationDetails() {
           </View>
 
           <View className="flex-row items-center flex-1 gap-4 p-6 mt-6 bg-white rounded-lg">
-            {data.utilisateur.id_avatar ? (
+            {data.utilisateur.id_avatar !== undefined ? (
               <View className="overflow-hidden border rounded-full w-14 h-14 border-neutral-100">
                 <Image
                   source={Avatars[data.utilisateur.id_avatar]}
