@@ -123,16 +123,19 @@ export default function ReservationDetails() {
             <View className="mt-8 border-t border-dashed border-neutral-400" />
 
             <View className="flex items-center justify-center flex-1 mt-6">
-              <View className="rounded-lg w-[140px] h-[140px] bg-slate-100">
+              <View className="rounded-lg w-[120px] h-[120px] bg-slate-100">
                 <QRCode
-                  value={JSON.stringify({ id: data.id_reservation })}
-                  size={140}
+                  size={120}
+                  value={JSON.stringify({
+                    id_reservation: data.id_reservation,
+                    id_itineraire: data.itineraire.id_itineraire,
+                  })}
                 />
               </View>
             </View>
           </View>
 
-          <View className="flex-row items-center flex-1 gap-4 p-6 mt-6 bg-white rounded-lg">
+          <View className="flex-row items-center flex-1 gap-2 p-6 mt-6 bg-white rounded-lg">
             {data.utilisateur.id_avatar !== undefined ? (
               <View className="overflow-hidden border rounded-full w-14 h-14 border-neutral-100">
                 <Image

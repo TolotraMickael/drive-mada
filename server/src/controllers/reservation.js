@@ -260,8 +260,6 @@ async function completeReservationPaiement(req, res) {
   const idReservation = parseInt(req.params["id"], 10);
   const connection = await pool.getConnection();
 
-  console.log({ idReservation });
-
   try {
     const [result] = await connection.execute(
       `

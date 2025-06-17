@@ -13,8 +13,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { TReservationCheckin } from "@/types/reservation";
 
 type Props = {
-  open: boolean;
-  idReservation: number;
+  reservationId: number;
   onClose: () => void;
 };
 
@@ -39,11 +38,13 @@ function ReservationStatus({
   utilisateur,
   loading,
   onClose,
+  nbPlaceReserve,
   handleCompletePaiement,
 }: {
   loading: boolean;
   status: TPaymentStatus;
   utilisateur?: TUtilisateur;
+  nbPlaceReserve?: number;
   handleCompletePaiement: () => void;
   onClose: () => void;
 }) {
@@ -105,7 +106,7 @@ function ReservationStatus({
         </Text>
       </View>
 
-      <View className="flex flex-row w-full gap-2 p-4 rounded-xl bg-background">
+      <View className="flex flex-row items-center w-full gap-3 p-4 rounded-xl bg-background">
         {utilisateur?.id_avatar !== undefined && (
           <Image
             source={Avatars[utilisateur.id_avatar]}
@@ -113,11 +114,16 @@ function ReservationStatus({
           />
         )}
         {utilisateur ? (
-          <View>
+          <View className="flex-1">
             <Text className="font-medium">{`${utilisateur.nom} ${utilisateur.prenom}`}</Text>
             <Text className="font-medium text-muted-foreground">
               {utilisateur.telephone}
             </Text>
+          </View>
+        ) : null}
+        {nbPlaceReserve ? (
+          <View className="flex items-center px-3 bg-white rounded-lg">
+            <Text className="font-semibold">{nbPlaceReserve}</Text>
           </View>
         ) : null}
       </View>
@@ -139,24 +145,24 @@ function ReservationStatus({
   );
 }
 
-export function CheckinModal({ idReservation, open, onClose }: Props) {
+export function CheckinModal({ reservationId, onClose }: Props) {
   const { token } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [loadingUpdate, setLoadingUpdate] = useState(false);
   const [data, setData] = useState<TReservationCheckin | null>(null);
 
   useEffect(() => {
-    if (open && idReservation) {
+    if (reservationId && reservationId > 0) {
       checkinReservation();
     }
-  }, [open, idReservation]);
+  }, [reservationId]);
 
   const checkinReservation = useCallback(async () => {
     setLoading(true);
 
     try {
       const response = await fetch(
-        `${Envs.apiUrl}/reservations/${idReservation}/check-in`,
+        `${Envs.apiUrl}/reservations/${reservationId}/check-in`,
         {
           method: "GET",
           headers: { Authorization: `Bearer ${token}` },
@@ -174,14 +180,14 @@ export function CheckinModal({ idReservation, open, onClose }: Props) {
     } finally {
       setLoading(false);
     }
-  }, [idReservation]);
+  }, [reservationId]);
 
   const handleCompletePaiement = useCallback(async () => {
     setLoadingUpdate(true);
 
     try {
       const response = await fetch(
-        `${Envs.apiUrl}/reservations/${idReservation}/complete-payment`,
+        `${Envs.apiUrl}/reservations/${reservationId}/complete-payment`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -209,11 +215,11 @@ export function CheckinModal({ idReservation, open, onClose }: Props) {
     } finally {
       setLoadingUpdate(false);
     }
-  }, [idReservation]);
+  }, [reservationId]);
 
   return (
     <Modal
-      visible={open}
+      visible={!!(reservationId && reservationId > 0)}
       transparent={true}
       animationType="slide"
       onRequestClose={onClose}
@@ -232,8 +238,9 @@ export function CheckinModal({ idReservation, open, onClose }: Props) {
               onClose={onClose}
               status={data?.paiement.statut as TPaymentStatus}
               handleCompletePaiement={handleCompletePaiement}
-              loading={loadingUpdate}
+              nbPlaceReserve={data?.nombre_place_reserve}
               utilisateur={data?.utilisateur}
+              loading={loadingUpdate}
             />
           )}
         </View>
