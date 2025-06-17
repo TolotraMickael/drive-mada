@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
+import { Toast } from "toastify-react-native";
+import { useCallback, useEffect, useState } from "react";
 import { CircleAlert, CircleCheckBig, CircleX } from "lucide-react-native";
 import { Modal, Text, View, ActivityIndicator, Image } from "react-native";
 
+import { Envs } from "@/lib/config";
 import { Colors } from "@/lib/colors";
 import { Avatars } from "@/lib/avatars";
 import { Button } from "@/components/button";
 import { TPaymentStatus } from "@/types/paiement";
 import { TUtilisateur } from "@/types/utilisateur";
+import { useAuthStore } from "@/store/auth-store";
+import { TReservationCheckin } from "@/types/reservation";
 
 type Props = {
   open: boolean;
+  idReservation: number;
   onClose: () => void;
 };
 
@@ -32,11 +37,13 @@ function ReservationInvalid({ onClose }: { onClose: () => void }) {
 function ReservationStatus({
   status,
   utilisateur,
+  loading,
   onClose,
   handleCompletePaiement,
 }: {
+  loading: boolean;
   status: TPaymentStatus;
-  utilisateur: TUtilisateur;
+  utilisateur?: TUtilisateur;
   handleCompletePaiement: () => void;
   onClose: () => void;
 }) {
@@ -49,7 +56,7 @@ function ReservationStatus({
       description: "Cette réservation a bien été payée.",
       icon: (
         <View className="p-4 rounded-full bg-green-600/20">
-          <CircleAlert size={42} color={Colors.success} />
+          <CircleCheckBig size={42} color={Colors.success} />
         </View>
       ),
     },
@@ -105,20 +112,26 @@ function ReservationStatus({
             className="bg-white border rounded-full w-14 h-14 border-neutral-300"
           />
         )}
-        <View>
-          <Text className="font-medium">{`${utilisateur.nom} ${utilisateur.prenom}`}</Text>
-          <Text className="font-medium text-muted-foreground">
-            {utilisateur.telephone}
-          </Text>
-        </View>
+        {utilisateur ? (
+          <View>
+            <Text className="font-medium">{`${utilisateur.nom} ${utilisateur.prenom}`}</Text>
+            <Text className="font-medium text-muted-foreground">
+              {utilisateur.telephone}
+            </Text>
+          </View>
+        ) : null}
       </View>
       <View className="flex flex-row items-center justify-center gap-4 mt-2">
         {status !== "PAID" ? (
-          <Button variant="primary" onPress={handleCompletePaiement}>
+          <Button
+            variant="primary"
+            disabled={loading}
+            onPress={handleCompletePaiement}
+          >
             Marquer comme payé
           </Button>
         ) : null}
-        <Button variant="secondary" onPress={onClose}>
+        <Button variant="secondary" disabled={loading} onPress={onClose}>
           Fermer
         </Button>
       </View>
@@ -126,20 +139,77 @@ function ReservationStatus({
   );
 }
 
-export function CheckinModal({ open, onClose }: Props) {
+export function CheckinModal({ idReservation, open, onClose }: Props) {
+  const { token } = useAuthStore();
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{ status: TPaymentStatus } | null>(null);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [data, setData] = useState<TReservationCheckin | null>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-      setData((prev) => ({ ...prev, status: "PAID" }));
-    }, 5000);
-  }, []);
+    if (open && idReservation) {
+      checkinReservation();
+    }
+  }, [open, idReservation]);
 
-  const handleCompletePaiement = () => {
-    //
-  };
+  const checkinReservation = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `${Envs.apiUrl}/reservations/${idReservation}/check-in`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) {
+        setData(null);
+      } else {
+        const result = await response.json();
+        setData(result.data);
+      }
+    } catch (err) {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [idReservation]);
+
+  const handleCompletePaiement = useCallback(async () => {
+    setLoadingUpdate(true);
+
+    try {
+      const response = await fetch(
+        `${Envs.apiUrl}/reservations/${idReservation}/complete-payment`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error();
+      } else {
+        onClose();
+        Toast.show({
+          type: "success",
+          text2: "Le paiement a été effectué avec succès.",
+          progressBarColor: "transparent",
+          visibilityTime: 5000,
+        });
+      }
+    } catch (err) {
+      Toast.show({
+        type: "error",
+        text2: "Une erreur s'est produite lors de paiement.",
+        progressBarColor: "transparent",
+        visibilityTime: 5000,
+      });
+    } finally {
+      setLoadingUpdate(false);
+    }
+  }, [idReservation]);
 
   return (
     <Modal
@@ -160,15 +230,10 @@ export function CheckinModal({ open, onClose }: Props) {
           ) : (
             <ReservationStatus
               onClose={onClose}
-              status={data?.status as TPaymentStatus}
+              status={data?.paiement.statut as TPaymentStatus}
               handleCompletePaiement={handleCompletePaiement}
-              utilisateur={{
-                id_avatar: 0,
-                id_utilisateur: 1,
-                nom: "John",
-                prenom: "Doe",
-                telephone: "038",
-              }}
+              loading={loadingUpdate}
+              utilisateur={data?.utilisateur}
             />
           )}
         </View>

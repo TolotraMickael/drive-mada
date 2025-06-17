@@ -29,4 +29,24 @@ export type TReservation = {
   vehicule: TVehicules;
 };
 
+export type TReservationCheckin = {
+  id_reservation: number;
+  date_creation: string;
+  date_mise_a_jour: string;
+  nombre_place_reserve: number;
+  statut: string;
+  utilisateur: {
+    id_utilisateur: number;
+    nom: string;
+    prenom: string;
+    telephone: string;
+    id_avatar: number;
+  };
+  paiement: {
+    id_paiement: number;
+    type: string;
+    statut: string;
+  };
+};
+
 export type TReservationStatus = "RESERVED" | "CANCELLED";

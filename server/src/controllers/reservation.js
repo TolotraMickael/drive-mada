@@ -1,5 +1,7 @@
 import { PaymentStatus, ReservationStatus } from "../lib/constant.js";
 import pool from "../lib/db.js";
+import itineraire from "./itineraire.js";
+import utilisateur from "./utilisateur.js";
 import vehicule from "./vehicule.js";
 
 function mapReservations(rows) {
@@ -197,8 +199,101 @@ async function getReservationById(req, res) {
   }
 }
 
+async function checkinReservation(req, res) {
+  const userId = req.userId;
+  const idReservation = parseInt(req.params["id"], 10);
+  const connection = await pool.getConnection();
+
+  try {
+    const [rows] = await connection.execute(
+      `
+        SELECT r.*,
+          u.id_utilisateur, u.nom, u.prenom, u.telephone, u.id_avatar,
+          i.id_itineraire, i.id_utilisateur as driverId, i.depart, i.destination, i.statut as statut_itineraire, i.nombre_place, i.prix,
+          p.id_paiement, p.statut AS statut_paiement
+        FROM reservations r
+        JOIN utilisateurs u ON r.id_utilisateur = u.id_utilisateur
+        JOIN itineraires i ON r.id_itineraire = i.id_itineraire
+        JOIN paiements p ON p.id_paiement = r.id_paiement
+        WHERE id_reservation = ? AND i.id_utilisateur = ?
+      `,
+      [idReservation, userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Reservation non trouvé." });
+    }
+
+    const data = {
+      id_reservation: rows[0].id_reservation,
+      nombre_place_reserve: rows[0].nombre_place_reserve,
+      statut: rows[0].statut,
+      itineraire: {
+        id_itineraire: rows[0].id_itineraire,
+        depart: rows[0].depart,
+        destination: rows[0].destination,
+        statut: rows[0].statut_itineraire,
+        nombre_place: rows[0].nombre_place,
+        prix: rows[0].prix,
+      },
+      utilisateur: {
+        id_utilisateur: rows[0].id_utilisateur,
+        nom: rows[0].nom,
+        prenom: rows[0].prenom,
+        telephone: rows[0].telephone,
+        id_avatar: rows[0].id_avatar,
+      },
+      paiement: {
+        id_paiement: rows[0].id_paiement,
+        statut: rows[0].statut_paiement,
+      },
+    };
+    return res.status(200).json({ data });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur interne du serveur." });
+  } finally {
+    connection.release();
+  }
+}
+
+async function completeReservationPaiement(req, res) {
+  const idReservation = parseInt(req.params["id"], 10);
+  const connection = await pool.getConnection();
+
+  console.log({ idReservation });
+
+  try {
+    const [result] = await connection.execute(
+      `
+        UPDATE paiements p 
+        JOIN reservations r ON r.id_paiement = p.id_paiement
+        SET p.statut = ?
+        WHERE r.id_reservation = ?
+      `,
+      [PaymentStatus.paid, idReservation]
+    );
+
+    if (result.affectedRows > 0) {
+      return res
+        .status(200)
+        .json({ message: "Paiement effectué avec succès!" });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "Erreur de paiement de réservation." });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Erreur interne du serveur." });
+  } finally {
+    connection.release();
+  }
+}
+
 export default {
   createReservation,
   getUserReservations,
   getReservationById,
+  checkinReservation,
+  completeReservationPaiement,
 };

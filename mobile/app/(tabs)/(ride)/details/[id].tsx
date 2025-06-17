@@ -298,7 +298,11 @@ export default function DetailsItineraire() {
       </ScrollView>
 
       <EditModal data={data} open={openModal} onClose={handleCloseModal} />
-      <CheckinModal open={openCheckinModal} onClose={handleCloseCheckinModal} />
+      <CheckinModal
+        open={openCheckinModal}
+        idReservation={data.id_itineraire}
+        onClose={handleCloseCheckinModal}
+      />
     </View>
   );
 }
