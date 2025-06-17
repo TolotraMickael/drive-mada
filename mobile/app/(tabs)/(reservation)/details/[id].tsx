@@ -80,8 +80,8 @@ export default function ReservationDetails() {
         >
           <View className="flex-1 p-6 mt-6 bg-white rounded-lg">
             <View className="flex flex-row items-center justify-between mb-6">
-              <View>
-                <Text className="font-medium">
+              <View className="flex-1">
+                <Text className="font-medium capitalize">
                   {formatDateTime(data.itineraire.date_depart, {
                     dateStyle: "full",
                   })}

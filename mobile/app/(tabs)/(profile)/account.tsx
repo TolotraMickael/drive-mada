@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { Toast } from "toastify-react-native";
 import {
   Text,
   View,
@@ -75,6 +76,12 @@ export default function AccountScreen() {
           email: result.data.email,
           telephone: result.data.telephone,
           id_avatar: result.data.id_avatar,
+        });
+        Toast.show({
+          type: "success",
+          visibilityTime: 5000,
+          progressBarColor: "transparent",
+          text2: "Votre compte a été mis à jour avec succès.",
         });
       }
     } catch (err) {

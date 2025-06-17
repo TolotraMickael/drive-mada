@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
+import ToastManager from "toastify-react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -53,6 +54,7 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
       </SafeScreen>
+      <ToastManager />
     </SafeAreaProvider>
   );
 }

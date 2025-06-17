@@ -27,6 +27,7 @@ import { TItineraire } from "@/types/itineraire";
 import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
 import { Avatars } from "@/lib/avatars";
+import { EditModal } from "./_modal";
 
 export default function DetailsItineraire() {
   const router = useRouter();
@@ -35,13 +36,20 @@ export default function DetailsItineraire() {
   const [showReservations, setShowReservations] = useState(false);
   const [data, setData] = useState<TItineraire | null>(null);
   const [open, setOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
 
+  const hasReservation = (data?.reservations?.length || 0) > 0;
+
   useEffect(() => {
     getDetailItineraireById();
   }, []);
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
 
   const getDetailItineraireById = useCallback(async () => {
     const itineraireId = parseInt(id as string, 10);
@@ -104,24 +112,27 @@ export default function DetailsItineraire() {
         contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-col w-full gap-8 p-6 bg-white rounded-lg">
-          <View className="flex-row justify-between overflow-hidden">
-            <Text className="text-3xl font-heading">Trajet</Text>
-            <TouchableOpacity>
-              <Pencil color={Colors.icon} size={24} />
+        <View className="relative flex-col w-full gap-8 p-6 bg-white rounded-lg">
+          <View className="absolute flex-row justify-between overflow-hidden top-4 right-4">
+            <TouchableOpacity
+              onPress={() => setOpenModal(true)}
+              className="items-center justify-center rounded-lg w-11 h-11"
+              disabled={hasReservation}
+            >
+              <Pencil
+                color={hasReservation ? Colors.secondary : Colors.icon}
+                size={18}
+              />
             </TouchableOpacity>
           </View>
 
-          <View className="mt-4">
-            <Text
-              className="font-regular text-neutral-600"
-              style={{ textTransform: "capitalize" }}
-            >
+          <View className="mr-14">
+            <Text className="font-medium capitalize text-foreground">
               {formatDateTime(data.date_depart, {
                 dateStyle: "full",
               })}
             </Text>
-            <Text className="font-regular text-neutral-600">
+            <Text className="font-medium text-foreground">
               {formatDateTime(data.date_depart, {
                 timeStyle: "short",
               })}
@@ -243,7 +254,10 @@ export default function DetailsItineraire() {
             <Image source={Images.QrCode} className="w-32 h-32" />
           </View>
           <View className="flex flex-row gap-4">
-            <Button disabled={!permission || open} onPress={handleOpenScan}>
+            <Button
+              disabled={!permission || open || !hasReservation}
+              onPress={handleOpenScan}
+            >
               Scanner
             </Button>
             {open && (
@@ -277,13 +291,9 @@ export default function DetailsItineraire() {
             </View>
           )}
         </View>
-
-        {/* <View className="flex-col items-center justify-between gap-6 p-6 mt-6 bg-white align-center rounded-2xl">
-          <Text className="text-lg font-medium">Vérification</Text>
-          <ScanLine size={100} strokeWidth={0.5} />
-          <Button>Scanner</Button>
-        </View> */}
       </ScrollView>
+
+      <EditModal data={data} open={openModal} onClose={handleCloseModal} />
     </View>
   );
 }

@@ -64,8 +64,8 @@ export default function Details() {
       if (!response.ok) {
         console.log("Error", result.message);
       } else {
-        setData(result);
-        setPlaceDisponible(result?.place_disponible || 0);
+        setData(result.data);
+        setPlaceDisponible(result?.data?.place_disponible || 0);
       }
     } catch (error) {
       console.log(error);
@@ -192,11 +192,11 @@ export default function Details() {
             </View>
 
             <View className="flex flex-row items-center gap-4 px-6 py-3 mt-6 bg-white rounded-xl">
-              {data.utilisateur.id_avatar ? (
+              {data.utilisateur.id_avatar !== null ? (
                 <Image
                   source={Avatars[data.utilisateur.id_avatar]}
                   resizeMode="contain"
-                  className="rounded-full w-14 h-14 bg-neutral-100"
+                  className="border rounded-full border-neutral-200 w-14 h-14 bg-neutral-100"
                 />
               ) : null}
               <View className="">

@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
+import { Toast } from "toastify-react-native";
 import { View, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 
-import { vehicles } from "@/lib/vehicle";
+import { Envs } from "@/lib/config";
+import { Images } from "@/lib/images";
 import { Button } from "@/components/button";
 import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
@@ -11,13 +13,12 @@ import { FieldInput } from "@/components/field-input";
 import { ItineraryPayload } from "@/types/itineraire";
 import { CardVehicle } from "@/components/card-vehicle";
 import { useVehiculeStore } from "@/store/vehicule.store";
-import { Envs } from "@/lib/config";
-import { Images } from "@/lib/images";
 
 export default function CreateRideScreen() {
   const router = useRouter();
   const { token } = useAuthStore();
   const { vehicules } = useVehiculeStore();
+  const [loading, setLoading] = useState(false);
 
   const vehiculeTypes = useMemo(
     () => vehicules.filter((item) => item.id_vehicule !== 1),
@@ -38,6 +39,8 @@ export default function CreateRideScreen() {
   };
 
   const handlCreateItinerary = async () => {
+    setLoading(true);
+
     try {
       const apiUrl = `${Envs.apiUrl}/itineraires`;
 
@@ -54,15 +57,29 @@ export default function CreateRideScreen() {
         }),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        console.log("Error =>", result.message);
-      } else {
+        throw new Error();
+      }
+
+      const result = await response.json();
+      if (result) {
         router.back();
+        Toast.show({
+          type: "success",
+          progressBarColor: "transparent",
+          text2: "Votre itineraire a été créé avec succès.",
+          visibilityTime: 5000,
+        });
       }
     } catch (error) {
-      console.log(error);
+      Toast.show({
+        type: "error",
+        progressBarColor: "transparent",
+        text2: "Une erreur s'est produite lors de la création de l'itineraire.",
+        visibilityTime: 5000,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 

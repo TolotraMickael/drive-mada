@@ -19,7 +19,7 @@ function mapItineraireObject(row, placesDisponibles, reservations, options) {
       nom_vehicule: row.nom_vehicule,
     },
     utilisateur: {
-      id_avatar: row?.id_avatar || null,
+      id_avatar: row?.id_avatar ?? null,
       id_utilisateur: row.id_utilisateur,
       nom_utilisateur: row.nom_utilisateur,
       prenom_utilisateur: row.prenom_utilisateur,
@@ -50,15 +50,15 @@ async function createItinerary(req, res) {
   const destination = req.body.destination;
   const prix = Number(req.body.prix) || 0;
   const nombrePlace = Number(req.body.nombrePlace) || 0;
-  const dateDepart = req.body.dateDepart;
   const statut = ItineraryStatus.waiting;
 
-  if (!prix || !depart || !destination || !dateDepart || !vehiculeId) {
+  if (!prix || !depart || !destination || !req.body.dateDepart || !vehiculeId) {
     return res
       .status(400)
       .json({ message: "Tous les champs sont obligatoires." });
   }
 
+  const dateDepart = String(req.body.dateDepart).slice(0, 19).replace("T", " ");
   const connection = await pool.getConnection();
 
   try {
@@ -119,13 +119,11 @@ async function getItineraryById(req, res) {
     const placesDisponibles =
       Number(rows[0].nombre_place) - Number(reservations[0].places_reserve);
 
-    console.log(rows[0].nombre_place);
-
     const data = mapItineraireObject(rows[0], placesDisponibles, {
       afficherPlaceDispo: true,
     });
-
-    return res.status(200).json(data);
+    console.log({ data: rows[0] });
+    return res.status(200).json({ data });
   } catch (err) {
     console.error("Erreur dans getItineraryById:", err);
     return res.status(500).json({ error: "Erreur interne du serveur." });
@@ -196,6 +194,8 @@ async function updateItinerary(req, res) {
     return res.status(400).json({ message: "ID incorrect." });
   }
 
+  console.log({ values });
+
   if (Object.keys(values).length === 0) {
     return res.status(400).json({ message: "Aucune valeur à mettre à jour." });
   }
@@ -214,6 +214,17 @@ async function updateItinerary(req, res) {
     const cles = entries.map(([key, value]) => `${key} = ?`);
     const params = entries.map(([key, value]) => value);
     params.push(id);
+
+    const dateDepartIndex = cles.findIndex((cle) =>
+      cle.includes("date_depart")
+    );
+
+    if (dateDepartIndex !== -1) {
+      const dateDepart = String(values.date_depart)
+        .slice(0, 19)
+        .replace("T", " ");
+      params.splice(dateDepartIndex, 1, dateDepart);
+    }
 
     const [result] = await connection.execute(
       `UPDATE itineraires SET ${cles.join(", ")} WHERE id_itineraire = ?`,
