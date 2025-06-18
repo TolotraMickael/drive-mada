@@ -1,2 +1,3 @@
-export const delay = (ms: number = 500) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+export function delay(ms: number = 500) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

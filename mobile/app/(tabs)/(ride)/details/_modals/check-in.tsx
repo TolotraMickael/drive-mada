@@ -169,6 +169,8 @@ export function CheckinModal({ reservationId, onClose }: Props) {
         }
       );
 
+      console.log(response);
+
       if (!response.ok) {
         setData(null);
       } else {

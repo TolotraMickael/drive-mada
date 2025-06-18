@@ -166,6 +166,7 @@ async function getUserReservations(req, res) {
 async function getReservationById(req, res) {
   const idReservation = parseInt(req.params["id"], 10);
   const userId = req.userId;
+  const idItineraire = parseInt(req.params["id"], 10);
 
   const connection = await pool.getConnection();
 
@@ -177,8 +178,8 @@ async function getReservationById(req, res) {
       p.id_paiement, p.type , p.statut AS statut_paiement,
       v.id_vehicule, v.nom AS nom_vehicule, v.photo AS photo_vehicule
       FROM reservations r 
-      JOIN utilisateurs u ON r.id_utilisateur = u.id_utilisateur 
       JOIN itineraires i ON r.id_itineraire = i.id_itineraire
+      JOIN utilisateurs u ON i.id_utilisateur = u.id_utilisateur 
       JOIN vehicules v ON v.id_vehicule = i.id_vehicule
       JOIN paiements p On r.id_paiement = p.id_paiement
       WHERE r.id_reservation = ? AND r.id_utilisateur = ?`,

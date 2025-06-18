@@ -36,6 +36,7 @@ function mapItineraireObject(row, placesDisponibles, reservations, options) {
           nom: reserve.nom,
           prenom: reserve.prenom,
           telephone: reserve.telephone,
+          statut: reserve.statut,
         },
       })),
     }),
@@ -50,6 +51,7 @@ async function createItinerary(req, res) {
   const destination = req.body.destination;
   const prix = Number(req.body.prix) || 0;
   const nombrePlace = Number(req.body.nombrePlace) || 0;
+  const dateDepart = req.body.dateDepart;
   const statut = ItineraryStatus.waiting;
 
   if (!prix || !depart || !destination || !req.body.dateDepart || !vehiculeId) {
@@ -58,7 +60,6 @@ async function createItinerary(req, res) {
       .json({ message: "Tous les champs sont obligatoires." });
   }
 
-  const dateDepart = String(req.body.dateDepart).slice(0, 19).replace("T", " ");
   const connection = await pool.getConnection();
 
   try {
@@ -194,8 +195,6 @@ async function updateItinerary(req, res) {
     return res.status(400).json({ message: "ID incorrect." });
   }
 
-  console.log({ values });
-
   if (Object.keys(values).length === 0) {
     return res.status(400).json({ message: "Aucune valeur à mettre à jour." });
   }
@@ -214,17 +213,6 @@ async function updateItinerary(req, res) {
     const cles = entries.map(([key, value]) => `${key} = ?`);
     const params = entries.map(([key, value]) => value);
     params.push(id);
-
-    const dateDepartIndex = cles.findIndex((cle) =>
-      cle.includes("date_depart")
-    );
-
-    if (dateDepartIndex !== -1) {
-      const dateDepart = String(values.date_depart)
-        .slice(0, 19)
-        .replace("T", " ");
-      params.splice(dateDepartIndex, 1, dateDepart);
-    }
 
     const [result] = await connection.execute(
       `UPDATE itineraires SET ${cles.join(", ")} WHERE id_itineraire = ?`,
@@ -291,7 +279,6 @@ async function getUserItinerary(req, res) {
 
 async function getUserItineraryDetail(req, res) {
   const connection = await pool.getConnection();
-  // const userId = req.userId;
   const idItineraire = parseInt(req.params["id"], 10);
 
   try {
@@ -312,10 +299,12 @@ async function getUserItineraryDetail(req, res) {
 
     const [reservations] = await connection.execute(
       `SELECT r.*,
-      u.id_utilisateur, u.id_avatar, u.nom, u.prenom, u.telephone 
+      u.id_utilisateur, u.id_avatar, u.nom, u.prenom, u.telephone ,
+      p.id_paiement, p.type, p.statut
       FROM reservations r 
       JOIN utilisateurs u ON r.id_utilisateur = u.id_utilisateur
-      WHERE r.id_itineraire = ?;`,
+      JOIN paiements p ON r.id_paiement = p.id_paiement
+      WHERE r.id_itineraire = ?`,
       [idItineraire]
     );
 

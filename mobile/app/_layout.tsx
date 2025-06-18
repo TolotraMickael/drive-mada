@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-reanimated";
+import { formatISO } from "date-fns";
 
 import "../global.css";
 import { fonts } from "@/lib/fonts";
@@ -22,9 +23,14 @@ export default function RootLayout() {
 
   useEffect(() => {
     checkAuth().then(async () => {
+      await useAuthStore.getState().getProfile();
       await useVehiculeStore.getState().getVehicules();
     });
   }, []);
+
+  // const d = new Date().toISOString();
+  // const f = formatISO(new Date());
+  // console.log({ d, f });
 
   useEffect(() => {
     if (loaded) {

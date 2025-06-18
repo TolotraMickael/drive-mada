@@ -96,9 +96,16 @@ export default function HomeScreen() {
       >
         <View className="flex-1 px-6">
           <View className="flex flex-row items-center justify-between mb-6">
-            <Text className="text-4xl font-heading text-foreground">
-              Bienvenue !
-            </Text>
+            <View className="flex-row items-center">
+              <Image
+                source={Images.logoIspm}
+                resizeMode="contain"
+                className="w-20 h-20"
+              />
+              <Text className="text-4xl ml-2 font-heading text-foreground">
+                Bienvenue !
+              </Text>
+            </View>
             <Link href="/(tabs)/(profile)" asChild replace>
               <TouchableOpacity className="rounded-full">
                 <Image

@@ -1,5 +1,5 @@
 import { Toast } from "toastify-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, View, Text, Image, TouchableOpacity } from "react-native";
@@ -11,8 +11,6 @@ import {
 } from "expo-camera";
 import {
   Pencil,
-  Map,
-  MapPin,
   Armchair,
   ChevronUp,
   ChevronDown,
@@ -31,6 +29,24 @@ import { AppHeader } from "@/components/app-header";
 import { EditModal } from "./_modals/update";
 import { CheckinModal } from "./_modals/check-in";
 import { delay } from "@/lib/delay";
+import { Item } from "@/components/item";
+
+function PaymentInfo({ status }: { status: string }) {
+  const Status = {
+    AUTHORIZED: "Paiement en attente",
+    PAID: "Paiement effectué",
+    CANCELLED: "Paiement annulé",
+    FAILED: "Paiement échoué",
+  };
+
+  return (
+    <View className="flex flex-row items-center self-start gap-2 px-3 py-1 rounded-full bg-neutral-400">
+      <Text className="text-sm font-regular text-neutral-50">
+        {Status[status as never]}
+      </Text>
+    </View>
+  );
+}
 
 export default function DetailsItineraire() {
   const router = useRouter();
@@ -114,6 +130,7 @@ export default function DetailsItineraire() {
 
       try {
         const dataObject = JSON.parse(scanningResult.data);
+        console.log({ dataObject });
 
         if (
           !dataObject ||
@@ -125,6 +142,8 @@ export default function DetailsItineraire() {
 
         const idReservation = Number(dataObject["id_reservation"]);
         const idItineraire = Number(dataObject["id_itineraire"]);
+
+        // console.log("data?.id_itineraire", data?.id_itineraire);
 
         if (idItineraire !== data?.id_itineraire) {
           throw new Error();
@@ -145,7 +164,7 @@ export default function DetailsItineraire() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppHeader onGoBack={() => router.back()} />
+      <AppHeader title="Détail du trajet" onGoBack={() => router.back()} />
 
       {data && !loading ? (
         <>
@@ -182,20 +201,10 @@ export default function DetailsItineraire() {
               </View>
 
               <View className="flex-row justify-between">
-                <View className="flex-col">
-                  <View className="flex flex-row items-center gap-3">
-                    <Map color={Colors.primary} size={24} />
-                    <Text className="text-lg font-semibold">{data.depart}</Text>
-                  </View>
-                  <View className="h-5 my-2 ml-3 border-l border-dashed border-primary" />
-                  <View className="flex flex-row items-center gap-3">
-                    <MapPin color={Colors.primary} size={24} />
-                    <Text className="text-lg font-semibold">
-                      {data.destination}
-                    </Text>
-                  </View>
+                <View className="flex-col flex-1 gap-6">
+                  <Item label="Départ" value={data.depart} />
+                  <Item label="Destination" value={data.destination} />
                 </View>
-
                 <View className="flex-row">
                   <View className="flex-col items-end justify-between">
                     <Text className="text-lg font-semibold text-foreground">
@@ -274,9 +283,12 @@ export default function DetailsItineraire() {
                           </Text>
                         </View>
                       </View>
-                      <Text className="w-8 pt-1 text-center bg-white rounded-full shadow-lg text-neutral-500 font-regular text-m">
-                        {per.nombre_place_reserve}
-                      </Text>
+                      <View className="items-end gap-2">
+                        <Text className="w-8 pt-1 text-center bg-white rounded-full shadow-lg text-neutral-500 font-regular text-m">
+                          {per.nombre_place_reserve}
+                        </Text>
+                        <PaymentInfo status={per.utilisateur.statut} />
+                      </View>
                     </View>
                   ))}
                 </View>

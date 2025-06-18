@@ -9,6 +9,7 @@ import Search from "@/assets/images/search.png";
 import Carpool from "@/assets/images/carpool.png";
 import Register from "@/assets/images/register.png";
 import GpsNavigator from "@/assets/images/gps-navigator.png";
+import logoIspm from "@/assets/images/logo-ispm.png";
 
 export const Images = {
   AllCar,
@@ -22,4 +23,13 @@ export const Images = {
   Register,
   GpsNavigator,
   QrCode,
+  logoIspm,
+  // Tout: "",
+  // SUV: '',
+  // Taxi: "",
+  // Minibus: "",
+  // Pickup: "",
+  // Van: ""
 };
+
+// source={Images[vehicule.nom]}

@@ -1,3 +1,4 @@
+import { formatISO } from "date-fns";
 import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Toast } from "toastify-react-native";
@@ -103,7 +104,7 @@ export default function CreateRideScreen() {
           ...data,
           prix: Number(data.prix),
           nombrePlace: Number(data.nombrePlace),
-          dateDepart: data.dateDepart.toISOString(),
+          dateDepart: formatISO(data.dateDepart).slice(0, 19).replace("T", " "),
         }),
       });
 

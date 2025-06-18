@@ -72,7 +72,6 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
     const asToken = await Storage.get("token");
     if (asToken !== null) {
       set(() => ({ token: asToken }));
-      await get().getProfile();
     }
   },
   setUser: (user: User) => {
@@ -92,7 +91,6 @@ export const useAuthStore = create<AuthStoreType>((set, get) => ({
       } else {
         set({ user: result.data });
       }
-      console.log(result);
     } catch (error) {
       console.log(error);
     }

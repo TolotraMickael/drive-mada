@@ -1,3 +1,4 @@
+import { formatISO } from "date-fns";
 import { X } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Toast } from "toastify-react-native";
@@ -116,7 +117,9 @@ export function EditModal({
             destination: data.destination,
             prix: Number(data.prix),
             nombre_place: Number(data.nombrePlace),
-            date_depart: data.dateDepart,
+            date_depart: formatISO(data.dateDepart)
+              .slice(0, 19)
+              .replace("T", " "),
           }),
         }
       );

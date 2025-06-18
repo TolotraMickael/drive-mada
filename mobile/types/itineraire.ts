@@ -1,3 +1,5 @@
+import { TPaymentStatus } from "@/types/paiement";
+
 export type TItineraire = {
   date_creation: string;
   date_depart: string;
@@ -32,6 +34,7 @@ export type TItineraire = {
         nom: string;
         prenom: string;
         telephone: string;
+        statut: TPaymentStatus;
       };
     }
   ];

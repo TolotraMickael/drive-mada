@@ -6,6 +6,8 @@ import { Colors } from "@/lib/colors";
 import { Avatars } from "@/lib/avatars";
 import { useAuthStore } from "@/store/auth-store";
 import { AppHeader } from "@/components/app-header";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 function MenuItem({ label, href }: { label: string; href: LinkProps["href"] }) {
   return (
@@ -22,6 +24,12 @@ function MenuItem({ label, href }: { label: string; href: LinkProps["href"] }) {
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      useAuthStore.getState().getProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     await logout();
